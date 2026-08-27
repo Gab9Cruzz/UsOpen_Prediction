@@ -1,23 +1,23 @@
 #!/usr/bin/env python
-"""Entry point de la CLI. Sin lógica de negocio acá (plan sección 12.1):
-sólo parseo de argumentos y orquestación de los módulos en src/.
+"""Entry point de la CLI. Sin lógica de negocio acá: sólo parseo de
+argumentos y orquestación de los módulos en src/. Ver README.md para el uso
+y PLAN_MEJORA_SIMULACION.md para el modelo y su calibración.
 """
 
 from __future__ import annotations
 
 import argparse
 import logging
-import sqlite3
 
 from src import config
-from src.data import ingest, repository
-from src.cli import render
-from src.simulation import monte_carlo
+from src.cli import html_report, render
+from src.cli.pipeline import run_prediction
+from src.validation import backtest
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Simulador Monte Carlo del cuadro del US Open (Fase 1: motor de datos + terminal)."
+        description="Simulador Monte Carlo del cuadro del US Open, con backtest de precisión (ver PLAN_MEJORA_SIMULACION.md)."
     )
     parser.add_argument(
         "--update-data", action="store_true",
@@ -33,8 +33,81 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--seed", type=int, default=config.DEFAULT_SEED, help="Seed para reproducibilidad.")
     parser.add_argument("--top", type=int, default=20, help="Cuántos jugadores mostrar en la tabla.")
+    parser.add_argument(
+        "--exact-simulation", action="store_true",
+        help=(
+            "Simula cada partido juego a juego (motor original) en vez de la réplica analítica "
+            "rápida (B10, Fase D: mismo modelo, un solo sorteo por partido en vez de ~100-200). "
+            "Más lento; solo para verificar/depurar. No aplica con --model elo (esa siempre decide "
+            "el partido completo con una sola moneda, por diseño)."
+        ),
+    )
+    parser.add_argument(
+        "--model", choices=["serve_return", "elo"], default="serve_return",
+        help=(
+            "serve_return (default): Barnett-Clarke + ajuste por oponente, simulado juego/set/partido "
+            "(medido: Brier 0.193 sobre 2010-2025, PLAN_MEJORA_SIMULACION.md). "
+            "elo: usa el ranking Elo de superficie directamente para decidir cada partido completo "
+            "(una sola moneda por partido, sin juegos/sets/tie-break) -- medido: Brier 0.190, "
+            "el baseline más fuerte del backtest, pero sin la estructura juego/set del modelo por defecto."
+        ),
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="Logging detallado.")
+    parser.add_argument(
+        "--backtest", metavar="INICIO-FIN", default=None,
+        help=(
+            "Corre el backtest de precisión (Fase A del plan de mejora) en vez de simular: "
+            "Brier/log-loss/ECE del modelo actual y los baselines (ranking ATP, Elo, moneda) "
+            "sobre ediciones ya jugadas. Ej: --backtest 2010-2025"
+        ),
+    )
+    parser.add_argument(
+        "--backtest-champion-sims", type=int, default=2000,
+        help="Simulaciones Monte Carlo por edición para el log-loss del campeón dentro de --backtest (default: 2000).",
+    )
+    parser.add_argument(
+        "--skip-champion-loss", action="store_true",
+        help="Con --backtest: omite el log-loss del campeón (solo métricas partido a partido, más rápido).",
+    )
+    parser.add_argument(
+        "--html", action="store_true",
+        help=(
+            "Además de la tabla en terminal, escribe un reporte HTML autocontenido a output/ "
+            "(ambientado en el US Open, ver PLAN_PAGINA_RESULTADOS.md) y lo abre en el navegador. "
+            "Funciona con --backtest también."
+        ),
+    )
+    parser.add_argument(
+        "--no-open", action="store_true",
+        help="Con --html o --serve: no abrir el navegador automáticamente.",
+    )
+    parser.add_argument(
+        "--serve", action="store_true",
+        help=(
+            "Levanta un servidor local interactivo (solo 127.0.0.1) con un botón para volver a "
+            "simular (ajustando simulaciones/modelo/año) sin reiniciar el proceso. No aplica con "
+            "--backtest."
+        ),
+    )
     return parser.parse_args()
+
+
+def _run_backtest(args: argparse.Namespace) -> None:
+    start_str, _, end_str = args.backtest.partition("-")
+    start_year, end_year = int(start_str), int(end_str)
+    print(f"Backtest {config.TOURNAMENT_NAME} {start_year}-{end_year} (puede tardar varios minutos: descarga + métricas)...")
+    report = backtest.run_match_level_backtest(start_year, end_year)
+    champion_loss = None
+    if not args.skip_champion_loss:
+        print("Calculando log-loss del campeón por edición...")
+        champion_loss = backtest.run_champion_log_loss(
+            start_year, end_year, n_simulations=args.backtest_champion_sims
+        )
+    render.render_backtest(report, champion_loss)
+
+    if args.html:
+        path = html_report.render_backtest_html(report, champion_loss, auto_open=not args.no_open)
+        print(f"Reporte HTML: {path}")
 
 
 def main() -> None:
@@ -44,49 +117,47 @@ def main() -> None:
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
 
-    # jugadores/metricas_superficie no están particionados por año: cada
-    # ingesta las reescribe para la edición pedida. Si se pide un draw_year
-    # distinto al último ingerido, hay que reingestar (con los CSV ya
-    # cacheados, salvo que se pida --update-data explícitamente).
-    needs_ingest = (
-        args.update_data
-        or not config.DB_PATH.exists()
-        or not repository.draw_is_ready(config.TOURNAMENT_NAME, args.draw_year)
-    )
-    if needs_ingest:
-        print("Actualizando datos (descarga + ingesta)...")
-        ingest.run_ingest(draw_year=args.draw_year, force_download=args.update_data)
+    if args.backtest:
+        _run_backtest(args)
+        return
 
-    draw, players_by_id = repository.load_draw(config.TOURNAMENT_NAME, args.draw_year)
+    if args.serve:
+        # Modo interactivo (PLAN_PAGINA_RESULTADOS.md, revisión post-gate):
+        # levanta un server local, corre la simulación inicial adentro y
+        # bloquea hasta Ctrl+C -- no imprime la tabla de terminal (la página
+        # ya la muestra, y el botón permite volver a correrla).
+        from src.cli import server
 
-    with sqlite3.connect(config.DB_PATH) as conn:
-        cutoff_row = conn.execute(
-            "SELECT cutoff_date FROM metricas_superficie LIMIT 1"
-        ).fetchone()
-    cutoff_date = cutoff_row[0] if cutoff_row else "?"
+        server.run_server(
+            {
+                "draw_year": args.draw_year,
+                "model": args.model,
+                "simulations": args.simulations,
+                "seed": args.seed,
+                "exact_simulation": args.exact_simulation,
+                "update_data": args.update_data,
+            }
+        )
+        return
 
-    print(f"Corriendo {args.simulations:,} simulaciones del cuadro ({len(draw)} jugadores)...")
-    counts = monte_carlo.run_simulations(draw, n_simulations=args.simulations, seed=args.seed)
-
-    note = (
-        f"Cuadro real de {config.TOURNAMENT_NAME} {args.draw_year} reconstruido desde resultados "
-        "históricos (Sackmann). El sorteo oficial en vivo llega en la Fase 4 del plan; "
-        "hasta entonces se simula la última edición completa disponible."
+    counts, players_by_id, meta = run_prediction(
+        draw_year=args.draw_year,
+        model=args.model,
+        simulations=args.simulations,
+        seed=args.seed,
+        exact_simulation=args.exact_simulation,
+        update_data=args.update_data,
     )
 
     render.render_probabilities(
-        counts,
-        players_by_id,
-        n_simulations=args.simulations,
-        top_n=args.top,
-        meta={
-            "tournament_name": config.TOURNAMENT_NAME,
-            "tournament_year": args.draw_year,
-            "draw_size": len(draw),
-            "cutoff_date": cutoff_date,
-            "note": note,
-        },
+        counts, players_by_id, n_simulations=args.simulations, top_n=args.top, meta=meta,
     )
+
+    if args.html:
+        path = html_report.render_probabilities_html(
+            counts, players_by_id, n_simulations=args.simulations, meta=meta, auto_open=not args.no_open,
+        )
+        print(f"Reporte HTML: {path}")
 
 
 if __name__ == "__main__":

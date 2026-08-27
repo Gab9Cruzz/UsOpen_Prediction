@@ -14,6 +14,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_RAW_DIR = PROJECT_ROOT / "data" / "raw"
 DB_PATH = PROJECT_ROOT / "database" / "us_open.db"
 SCHEMA_PATH = PROJECT_ROOT / "database" / "schema.sql"
+# PLAN_PAGINA_RESULTADOS.md (decisión #18): destino de los reportes HTML
+# (--html), generado y descartable -- no es fuente, ver .gitignore.
+OUTPUT_DIR = PROJECT_ROOT / "output"
 
 # --- Fuente de datos históricos ---------------------------------------------
 # Fuente canónica: https://github.com/JeffSackmann/tennis_atp
@@ -36,6 +39,11 @@ MATCHES_FILE_TEMPLATE = "atp_matches_{year}.csv"
 # --- Ventana de métricas -----------------------------------------------------
 SURFACE = "Hard"
 YEARS_BACK = 3  # incluye el año del torneo objetivo + 2 anteriores
+# B9 (plan de mejora): decaimiento exponencial de las métricas de saque/resto
+# -- un partido de hace 1 mes predice mejor que uno de hace 3 años. Vida
+# media en días; a esta distancia en el pasado, un partido pesa la mitad que
+# uno de hoy.
+DECAY_HALF_LIFE_DAYS = 365
 
 # --- Torneo objetivo ---------------------------------------------------------
 # El sorteo oficial 2026 aún no existe como dataset histórico (el torneo se
@@ -50,3 +58,6 @@ DEFAULT_DRAW_YEAR = 2025
 DEFAULT_SIMULATIONS = 10_000
 DEFAULT_SEED = 42
 BEST_OF = 5  # Grand Slam masculino
+# B8 (plan de mejora): el set decisivo del US Open usa tie-break a 10 puntos
+# desde 2022, no a 7 como el resto de los sets.
+DECIDING_SET_TIEBREAK_TARGET = 10

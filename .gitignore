@@ -1,0 +1,7 @@
+# Reportes HTML generados por --html/--serve (PLAN_PAGINA_RESULTADOS.md) -- artefactos, no fuente.
+output/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
