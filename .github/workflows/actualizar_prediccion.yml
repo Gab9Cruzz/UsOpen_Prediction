@@ -1,0 +1,101 @@
+# Automatización web (PLAN_AUTOMATIZACION_WEB.md): corre el pipeline de
+# predicción existente + el exportador JSON, y commitea SOLO el JSON
+# (nunca database/us_open.db ni data/raw/*.csv -- ver la sección 3.2 del
+# plan sobre higiene de repo) si el resultado cambió.
+#
+# Trigger: `schedule` ÚNICAMENTE -- nunca `push`/`pull_request_target`. Esto
+# evita el loop de auto-disparo (el propio commit del bot dispararía el
+# workflow de nuevo) y, en un repo público, un trigger de PR con permisos de
+# escritura es un patrón de ataque conocido -- ni siquiera está en la lista
+# acá. `workflow_dispatch` sí se agrega para poder disparar una corrida
+# manual de prueba desde la pestaña Actions (un humano con permiso de
+# escritura en el repo, no un tercero).
+name: Actualizar predicción
+
+on:
+  schedule:
+    # Ventana aproximada del US Open (defensa primaria -- el cron ni
+    # siquiera dispara fuera de estas fechas, así no se gastan minutos de CI
+    # en un no-op). MANTENIMIENTO ANUAL: actualizar estos dos rangos según
+    # las fechas oficiales de cada edición (ver MANUAL_STEPS.md, sección 3).
+    - cron: "0 5 18-31 8 *"  # 18-31 de agosto, 05:00 UTC (~medianoche US Eastern)
+    - cron: "0 5 1-14 9 *"   # 1-14 de septiembre, 05:00 UTC
+  workflow_dispatch: {}
+
+# Desde 2023 GitHub crea los repos nuevos con GITHUB_TOKEN de solo lectura
+# por default -- sin esto el `git push` del paso de commit falla con 403
+# (ver MANUAL_STEPS.md, sección 2: además hace falta el toggle de Settings,
+# este `permissions:` es el techo, no lo reemplaza).
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Chequear ventana del torneo (defensa secundaria, red de seguridad)
+        id: window
+        run: |
+          TODAY=$(date -u +%m-%d)
+          # Mismo rango que los cron de arriba -- MANTENIMIENTO ANUAL: tocar
+          # los dos juntos (ver MANUAL_STEPS.md, sección 3).
+          START="08-18"
+          END="09-14"
+          if [[ "$TODAY" > "$START" || "$TODAY" == "$START" ]] && [[ "$TODAY" < "$END" || "$TODAY" == "$END" ]]; then
+            echo "in_window=true" >> "$GITHUB_OUTPUT"
+            echo "Dentro de la ventana del torneo ($START a $END UTC) -- corriendo el pipeline."
+          else
+            echo "in_window=false" >> "$GITHUB_OUTPUT"
+            echo "Fuera de la ventana del torneo ($START a $END UTC) -- no-op limpio, sin correr el pipeline."
+          fi
+
+      - uses: actions/setup-python@v5
+        if: steps.window.outputs.in_window == 'true'
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Instalar dependencias
+        if: steps.window.outputs.in_window == 'true'
+        run: pip install -r requirements.txt
+
+      - name: Generar predicción y exportar JSON
+        if: steps.window.outputs.in_window == 'true'
+        run: |
+          # --draw-year explícito, SIEMPRE (hallazgo CRÍTICO del plan,
+          # sección 3.2): config.DEFAULT_DRAW_YEAR está hardcodeado a 2025 --
+          # sin este flag, la automatización simularía el torneo 2025 (ya
+          # jugado) para siempre, en silencio, sin que el job falle ni se
+          # note. `$(date +%Y)` además elimina el mantenimiento anual de
+          # bumpear el año a mano.
+          #
+          # Ninguna supresión de errores acá (nada de `|| true` ni
+          # `continue-on-error`) -- si esto falla de verdad (Wikipedia
+          # cambió su formato, el mirror de CSV está caído), el job debe
+          # quedar en rojo y notificar, no tragarse el error en las dos
+          # semanas del año en que la corrección importa de verdad.
+          python simular_usopen.py \
+            --update-data \
+            --draw-year "$(date +%Y)" \
+            --export-json docs/data/resultados_simulacion.json
+
+      - name: Commitear el JSON si cambió
+        if: steps.window.outputs.in_window == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Solo se stagea el JSON -- database/us_open.db y data/raw/*.csv
+          # quedan modificados en el working tree del runner pero nunca se
+          # commitean (se descartan solos cuando el runner se destruye al
+          # terminar el job). Commit condicional: sin esto, cada corrida
+          # generaría un commit aunque nada haya cambiado -- ruido en el
+          # historial.
+          if git diff --quiet -- docs/data/resultados_simulacion.json; then
+            echo "Sin cambios en la predicción -- nada para commitear."
+          else
+            git add docs/data/resultados_simulacion.json
+            git commit -m "chore(data): actualizar predicción $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git push
+          fi
