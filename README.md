@@ -78,11 +78,11 @@ actualizar_prediccion.yml` corre el pipeline de arriba y exporta
 `docs/data/resultados_simulacion.json` (`--export-json`, ver
 `src/cli/json_export.py`), que sirve `docs/index.html` (Tailwind + Chart.js,
 sin backend) por GitHub Pages: tabla completa, probabilidad de campeón,
-fluctuación por ronda y el cuadro proyectado con hover. Diseño completo en
-[PLAN_AUTOMATIZACION_WEB.md](PLAN_AUTOMATIZACION_WEB.md); los pasos manuales
-de GitHub (habilitar Pages, permisos del bot) están en
-[MANUAL_STEPS.md](MANUAL_STEPS.md) -- hace falta correrlos una vez para que
-el sitio quede publicado.
+fluctuación por ronda, aciertos del modelo por ronda y el cuadro proyectado
+con hover. Los pasos manuales de GitHub (habilitar Pages, permisos de
+escritura del bot en Settings -> Actions -> General) ya están corridos en
+este repo -- el workflow se dispara solo (`schedule`) durante la ventana del
+torneo, o a mano desde la pestaña Actions (`workflow_dispatch`).
 
 ## Modelos disponibles (`--model`)
 

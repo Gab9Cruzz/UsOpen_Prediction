@@ -17,15 +17,29 @@ on:
     # Ventana aproximada del US Open (defensa primaria -- el cron ni
     # siquiera dispara fuera de estas fechas, así no se gastan minutos de CI
     # en un no-op). MANTENIMIENTO ANUAL: actualizar estos dos rangos según
-    # las fechas oficiales de cada edición (ver MANUAL_STEPS.md, sección 3).
+    # las fechas oficiales de cada edición (mismo rango que el chequeo de
+    # ventana más abajo -- tocar los dos juntos).
     - cron: "0 5 18-31 8 *"  # 18-31 de agosto, 05:00 UTC (~medianoche US Eastern)
     - cron: "0 5 1-14 9 *"   # 1-14 de septiembre, 05:00 UTC
   workflow_dispatch: {}
 
+# Sin esto, dos corridas superpuestas (cron + un workflow_dispatch manual, o
+# dos manuales seguidos) hacen CADA UNA su propio checkout+commit+push sobre
+# la MISMA base de `main` -- la segunda en llegar al `git push` se rechaza
+# ("! [rejected] main -> main (fetch first)", visto en una corrida real) sin
+# reintento ni pull, y esa corrida completa (varios minutos de descarga +
+# simulación) se pierde. `cancel-in-progress: false`: encolar, no cancelar --
+# la corrida en curso nunca se corta a mitad del `git push`, la siguiente
+# arranca recién cuando termina, con un checkout ya al día.
+concurrency:
+  group: actualizar-prediccion
+  cancel-in-progress: false
+
 # Desde 2023 GitHub crea los repos nuevos con GITHUB_TOKEN de solo lectura
 # por default -- sin esto el `git push` del paso de commit falla con 403
-# (ver MANUAL_STEPS.md, sección 2: además hace falta el toggle de Settings,
-# este `permissions:` es el techo, no lo reemplaza).
+# (además hace falta el toggle "Read and write permissions" en
+# Settings -> Actions -> General -> Workflow permissions del repo -- este
+# `permissions:` es el techo, no lo reemplaza).
 permissions:
   contents: write
 
@@ -40,7 +54,7 @@ jobs:
         run: |
           TODAY=$(date -u +%m-%d)
           # Mismo rango que los cron de arriba -- MANTENIMIENTO ANUAL: tocar
-          # los dos juntos (ver MANUAL_STEPS.md, sección 3).
+          # los dos juntos.
           START="08-18"
           END="09-14"
           if [[ "$TODAY" > "$START" || "$TODAY" == "$START" ]] && [[ "$TODAY" < "$END" || "$TODAY" == "$END" ]]; then
