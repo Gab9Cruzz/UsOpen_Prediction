@@ -1,7 +1,7 @@
-# Automatización web (PLAN_AUTOMATIZACION_WEB.md): corre el pipeline de
-# predicción existente + el exportador JSON, y commitea SOLO el JSON
-# (nunca database/us_open.db ni data/raw/*.csv -- ver la sección 3.2 del
-# plan sobre higiene de repo) si el resultado cambió.
+# Automatización web: corre el pipeline de predicción existente + el
+# exportador JSON, y commitea SOLO el JSON (nunca database/us_open.db ni
+# data/raw/*.csv -- son artefactos regenerables, no fuente) si el resultado
+# cambió.
 #
 # Trigger: `schedule` ÚNICAMENTE -- nunca `push`/`pull_request_target`. Esto
 # evita el loop de auto-disparo (el propio commit del bot dispararía el
@@ -100,6 +100,32 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # `checkout` (primer paso del job) tomó `main` hace varios minutos
+          # -- todo lo que pasó desde entonces (descarga + `--update-data` +
+          # miles de simulaciones) es tiempo en el que `main` pudo moverse de
+          # verdad (otro push directo, no solo otra corrida de este mismo
+          # workflow -- `concurrency:` de arriba solo serializa corridas de
+          # ESTE workflow entre sí, no protege contra un push manual mientras
+          # una corrida está en el medio; visto en corridas reales: un push
+          # directo a `main` durante la simulación hizo que el `git push` de
+          # acá se rechazara, "! [rejected] main -> main (fetch first)", dos
+          # veces seguidas, perdiendo la corrida completa cada vez).
+          #
+          # Guarda el JSON recién generado aparte, sincroniza el repo del
+          # runner al tip REAL de `main` (`reset --hard`, no `--soft`: hace
+          # falta que el ÍNDICE también quede al día, no solo el puntero de
+          # HEAD -- si `main` avanzó con cambios en OTROS archivos mientras
+          # corría la simulación, un `--soft` los revertiría sin querer en
+          # este commit, porque el índice seguiría reflejando el checkout
+          # viejo) y recién ahí pisa el JSON con la versión fresca. Así el
+          # diff/commit/push de abajo corren contra la base más nueva posible
+          # -- ventana de carrera de milisegundos, no minutos. Se pierden a
+          # propósito los cambios sin commitear en database/us_open.db y
+          # data/raw/*.csv (nunca se commitean igual, ver más abajo).
+          cp docs/data/resultados_simulacion.json "$RUNNER_TEMP/resultados_simulacion.json"
+          git fetch origin main
+          git reset --hard origin/main
+          cp "$RUNNER_TEMP/resultados_simulacion.json" docs/data/resultados_simulacion.json
           # Solo se stagea el JSON -- database/us_open.db y data/raw/*.csv
           # quedan modificados en el working tree del runner pero nunca se
           # commitean (se descartan solos cuando el runner se destruye al
