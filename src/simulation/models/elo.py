@@ -29,7 +29,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from src.simulation.monte_carlo import ROUND_ORDER
+from src.simulation.monte_carlo import ROUND_ORDER, KnownResults, resolve_known_winner
 
 INITIAL_ELO = 1500.0
 K_FACTOR = 32.0
@@ -139,19 +139,27 @@ def simulate_match_elo(rng: random.Random, a: EloPlayer, b: EloPlayer) -> EloPla
     return a if rng.random() < p_a else b
 
 
-def simulate_tournament_elo(rng: random.Random, draw: list[EloPlayer]) -> dict[str, str]:
+def simulate_tournament_elo(
+    rng: random.Random, draw: list[EloPlayer], known_results: KnownResults | None = None
+) -> dict[str, str]:
     """Simula un cuadro completo de eliminación directa usando SOLO Elo
     (`simulate_match_elo`) para decidir cada partido -- misma estructura de
-    ronda a ronda que `monte_carlo.simulate_tournament`."""
+    ronda a ronda que `monte_carlo.simulate_tournament`, incluido el
+    condicionamiento por `known_results` (Fase 4, D7: paridad con el modelo
+    por defecto -- ver el docstring de `monte_carlo.simulate_tournament`)."""
     reached: dict[str, str] = {p.player_id: "R128" for p in draw}
     current_round = draw
     round_names = ROUND_ORDER[1:]
+    played_rounds = ROUND_ORDER[:-1]
 
-    for round_name in round_names:
+    for played_round, round_name in zip(played_rounds, round_names):
         winners: list[EloPlayer] = []
         for i in range(0, len(current_round), 2):
             a, b = current_round[i], current_round[i + 1]
-            winner = simulate_match_elo(rng, a, b)
+            match_index = i // 2 + 1
+            winner = resolve_known_winner(a, b, played_round, match_index, known_results)
+            if winner is None:
+                winner = simulate_match_elo(rng, a, b)
             reached[winner.player_id] = round_name
             winners.append(winner)
         current_round = winners
@@ -161,7 +169,7 @@ def simulate_tournament_elo(rng: random.Random, draw: list[EloPlayer]) -> dict[s
 
 
 def run_simulations_elo(
-    draw: list[EloPlayer], n_simulations: int, seed: int
+    draw: list[EloPlayer], n_simulations: int, seed: int, known_results: KnownResults | None = None
 ) -> dict[str, dict[str, int]]:
     """Corre N simulaciones del torneo usando el modelo Elo directo (ver
     `simulate_tournament_elo`) y acumula, por jugador, cuántas veces alcanzó
@@ -174,7 +182,7 @@ def run_simulations_elo(
     rng = random.Random(seed)
 
     for _ in range(n_simulations):
-        reached = simulate_tournament_elo(rng, draw)
+        reached = simulate_tournament_elo(rng, draw, known_results=known_results)
         for player_id, round_name in reached.items():
             idx = ROUND_ORDER.index(round_name)
             for r in ROUND_ORDER[: idx + 1]:

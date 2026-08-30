@@ -203,6 +203,52 @@ def test_results_table_includes_bracket_when_model_given():
     assert "bracket-wrap" not in without_model
 
 
+def test_round_snapshots_omitted_with_only_baseline():
+    """Fase 4: un solo snapshot (R128, pre-torneo) sería un duplicado exacto
+    de la tabla principal -- no debe agregar la sección."""
+    players = _players(("p1", "Fuerte", 1), ("p2", "Débil", None))
+    counts = _make_counts(100, {"p1": {"CAMPEON": 90}, "p2": {"CAMPEON": 10}})
+    snapshots = [{"round_name": "R128", "n_simulations": 100, "counts": counts, "frozen": True}]
+    fragment = html_report.render_results_table(counts, players, 100, round_snapshots=snapshots)
+    assert "snapshot-block" not in fragment
+
+
+def test_round_snapshots_render_when_tournament_started():
+    players = _players(("p1", "Fuerte", 1), ("p2", "Débil", None))
+    counts_r128 = _make_counts(100, {"p1": {"CAMPEON": 60}, "p2": {"CAMPEON": 40}})
+    counts_r64 = _make_counts(100, {"p1": {"CAMPEON": 100}, "p2": {"CAMPEON": 0}})
+    snapshots = [
+        {"round_name": "R128", "n_simulations": 100, "counts": counts_r128, "frozen": True},
+        {"round_name": "R64", "n_simulations": 100, "counts": counts_r64, "frozen": False},
+    ]
+    fragment = html_report.render_results_table(counts_r64, players, 100, round_snapshots=snapshots)
+    assert fragment.count("snapshot-block") == 2
+    assert "Entrando a R128" in fragment
+    assert "Entrando a R64" in fragment
+    assert "🔒 congelada" in fragment  # solo el snapshot de R128 está frozen=True
+
+
+def test_round_snapshots_omitted_when_empty():
+    players = _players(("p1", "Fuerte", 1), ("p2", "Débil", None))
+    counts = _make_counts(100, {"p1": {"CAMPEON": 90}, "p2": {"CAMPEON": 10}})
+    fragment = html_report.render_results_table(counts, players, 100, round_snapshots=[])
+    assert "snapshot-block" not in fragment
+
+
+def test_bracket_shows_real_winner_when_known_result_given():
+    from src.simulation.monte_carlo import Player as MCPlayer
+
+    players = {
+        "p1": MCPlayer(player_id="p1", full_name="Favorito", seed=1, serve_pct=0.70, return_pct=0.40),
+        "p2": MCPlayer(player_id="p2", full_name="Sorpresa", seed=None, serve_pct=0.40, return_pct=0.20),
+    }
+    counts = _make_counts(100, {"p1": {"CAMPEON": 90}, "p2": {"CAMPEON": 10}})
+    # p2 (el "underdog" según el modelo) ya ganó de verdad ese partido real.
+    known = {("F", 1): "p2"}
+    fragment = html_report.render_results_table(counts, players, 100, model="serve_return", known_results=known)
+    assert "🏆 Sorpresa" in fragment
+
+
 def test_output_dir_created_if_missing(tmp_path):
     missing_dir = tmp_path / "no_existe_todavia"
     assert not missing_dir.exists()

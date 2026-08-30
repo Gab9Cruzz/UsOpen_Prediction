@@ -222,6 +222,23 @@ tbody tr:nth-child(even) { background: #EAF2FB; }
     color: #FFFFFF;
     border: 2px solid #CCFF00;
 }
+.snapshot-block {
+    margin-bottom: 22px;
+}
+.snapshot-title {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0 0 8px 0;
+}
+.snapshot-title h3 { margin: 0; font-size: 0.95rem; color: #0B1F33; }
+.snapshot-frozen {
+    font-size: 0.72rem;
+    color: #5a6472;
+    background: #EAF2FB;
+    border-radius: 10px;
+    padding: 2px 8px;
+}
 """
 
 BRACKET_ROUND_LABELS = ["R128", "R64", "R32", "R16", "QF", "SF", "F"]
@@ -339,33 +356,18 @@ def render_bracket_fragment(rounds: list[list[dict]], champion: object) -> str:
     return "".join(parts)
 
 
-def render_results_table(
-    counts: dict[str, dict[str, int]],
-    players_by_id: dict[str, object],
-    n_simulations: int,
-    extra_content: str = "",
-    model: str | None = None,
+def _probability_table_html(
+    counts: dict[str, dict[str, int]], players_by_id: dict[str, object], n_simulations: int, top_n: int | None = None
 ) -> str:
-    """El `<div class="content">...` (controles opcionales + bracket
-    proyectado + tabla), SIN el masthead -- es la pieza que `server.py`
-    reusa tal cual en el `GET /` inicial y en cada respuesta de
-    `POST /api/simulate`. Orden por probabilidad de Campeón descendente,
-    cuadro COMPLETO (sin recortar por `--top` -- decisión #20: una página no
-    tiene la limitación de legibilidad de la terminal).
-
-    `model`: si se pasa, antepone el cuadro proyectado (bracket) calculado
-    con `pipeline.build_predicted_bracket` -- opcional para no romper
-    llamadas existentes que no lo necesiten (p.ej. tests unitarios de solo
-    tabla)."""
-    parts = ['<div class="content">', extra_content]
-
-    if model is not None:
-        rounds, champion = build_predicted_bracket(players_by_id, model)
-        parts.append(render_bracket_fragment(rounds, champion))
-
+    """La tabla `<table>` de probabilidades por ronda, sola -- compartida
+    entre la tabla principal (`render_results_table`, cuadro completo) y
+    cada bloque de snapshot por ronda (Fase 4, `render_snapshot_blocks`,
+    recortado a `top_n` para que apilar 7 no vuelva la página kilométrica)."""
     ranked = sorted(counts.items(), key=lambda kv: kv[1]["CAMPEON"], reverse=True)
+    if top_n is not None:
+        ranked = ranked[:top_n]
 
-    parts.append('<div class="table-wrap"><table><thead><tr>')
+    parts = ['<div class="table-wrap"><table><thead><tr>']
     parts.append("<th>#</th><th>Jugador</th><th>Seed</th>")
     for r in DISPLAY_ROUNDS:
         label = f"{LABELS[r]} (IC95%)" if r == "CAMPEON" else LABELS[r]
@@ -384,12 +386,70 @@ def render_results_table(
         parts.append("</tr>")
 
     parts.append("</tbody></table></div>")
+    return "".join(parts)
+
+
+def render_results_table(
+    counts: dict[str, dict[str, int]],
+    players_by_id: dict[str, object],
+    n_simulations: int,
+    extra_content: str = "",
+    model: str | None = None,
+    known_results: dict | None = None,
+    round_snapshots: list[dict] | None = None,
+) -> str:
+    """El `<div class="content">...` (controles opcionales + bracket
+    proyectado + tabla), SIN el masthead -- es la pieza que `server.py`
+    reusa tal cual en el `GET /` inicial y en cada respuesta de
+    `POST /api/simulate`. Orden por probabilidad de Campeón descendente,
+    cuadro COMPLETO (sin recortar por `--top` -- decisión #20: una página no
+    tiene la limitación de legibilidad de la terminal).
+
+    `model`: si se pasa, antepone el cuadro proyectado (bracket) calculado
+    con `pipeline.build_predicted_bracket` -- opcional para no romper
+    llamadas existentes que no lo necesiten (p.ej. tests unitarios de solo
+    tabla). `known_results`/`round_snapshots` (Fase 4): condicionan el
+    bracket proyectado y agregan los snapshots por ronda apilados debajo de
+    la tabla principal -- ambos opcionales, una edición histórica no los tiene."""
+    parts = ['<div class="content">', extra_content]
+
+    if model is not None:
+        rounds, champion = build_predicted_bracket(players_by_id, model, known_results=known_results)
+        parts.append(render_bracket_fragment(rounds, champion))
+
+    parts.append(_probability_table_html(counts, players_by_id, n_simulations))
     parts.append(
         '<div class="footer-note">IC95% = intervalo de confianza binomial del 95% sobre el campeón '
         "(B6, plan de mejora): diferencias más chicas que el ancho del intervalo entre dos jugadores "
         f"no son distinguibles con {n_simulations:,} simulaciones.</div>"
     )
+
+    # Con un solo snapshot (R128, el torneo todavía no arrancó) esta sección
+    # sería un duplicado exacto de la tabla principal de arriba -- solo
+    # aporta algo distinto cuando ya hay más de una ronda que mostrar.
+    if round_snapshots and len(round_snapshots) > 1:
+        parts.append(render_snapshot_blocks(round_snapshots, players_by_id))
+
     parts.append("</div>")
+    return "".join(parts)
+
+
+def render_snapshot_blocks(round_snapshots: list[dict], players_by_id: dict[str, object], top_n: int = 16) -> str:
+    """Fase 4 (D2): la predicción "entrando a la ronda X" para cada ronda ya
+    alcanzada por el torneo real, apiladas en orden R128 -> F tal como se
+    pidió -- cada una es una tabla independiente (recortada a `top_n` para
+    que 7 tablas no hagan la página imposible de recorrer), con un tag
+    "🔒 congelada" cuando esa ronda ya no puede cambiar (D6: todas las rondas
+    anteriores a ella están 100% jugadas en la realidad)."""
+    parts = ['<h2 class="section-title">Predicción por ronda (a medida que se juega el torneo)</h2>']
+    for snap in round_snapshots:
+        frozen_tag = '<span class="snapshot-frozen">🔒 congelada</span>' if snap["frozen"] else ""
+        parts.append(
+            '<div class="snapshot-block">'
+            f'<div class="snapshot-title"><h3>Entrando a {html.escape(snap["round_name"])}</h3>{frozen_tag}</div>'
+            + _probability_table_html(snap["counts"], players_by_id, snap["n_simulations"], top_n=top_n)
+            + "</div>"
+        )
     return "".join(parts)
 
 
@@ -404,7 +464,10 @@ def render_results_fragment(
     piezas como sí hace `--serve` (ver `render_masthead`/`render_results_table`)."""
     meta = meta or {}
     return render_masthead(meta, n_simulations) + render_results_table(
-        counts, players_by_id, n_simulations, model=meta.get("model"),
+        counts, players_by_id, n_simulations,
+        model=meta.get("model"),
+        known_results=meta.get("known_results"),
+        round_snapshots=meta.get("round_snapshots"),
     )
 
 

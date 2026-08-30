@@ -26,6 +26,12 @@ def render_probabilities(
         )
         if meta.get("note"):
             console.print(f"[dim]{meta['note']}[/dim]")
+        if meta.get("round_snapshots") and len(meta["round_snapshots"]) > 1:
+            rounds_shown = ", ".join(s["round_name"] for s in meta["round_snapshots"])
+            console.print(
+                f"[dim]Predicción por ronda disponible ({rounds_shown}) -- corré con --html para "
+                "verlas apiladas; acá abajo se muestra solo la más reciente.[/dim]"
+            )
         console.print()
 
     ranked = sorted(

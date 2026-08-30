@@ -10,7 +10,7 @@ import math
 import sqlite3
 
 from src import config
-from src.data import fetchers, ingest, repository
+from src.data import fetchers, ingest, live_draw, repository
 from src.simulation import monte_carlo
 from src.simulation.models import elo as elo_model
 from src.simulation.models import serve_return
@@ -33,7 +33,10 @@ def _load_elo_draw(draw: list, tournament_name: str, draw_year: int) -> list[elo
         fetchers.fetch_matches(missing)
 
     all_matches = ingest.load_matches_for_years(years_needed)
-    cutoff = ingest.cutoff_date_for(tournament_name, draw_year, all_matches)
+    # Fase 4: `resolve_cutoff` (no `cutoff_date_for`) -- para una edición en
+    # vivo (sin R128 histórico todavía) cae a "hoy" en vez de reventar, igual
+    # que `ingest.run_ingest` para el resto de las métricas.
+    cutoff = ingest.resolve_cutoff(tournament_name, draw_year, all_matches)
     ratings = elo_model.build_elo_snapshots(all_matches, config.SURFACE, [cutoff])[cutoff]
 
     return [
@@ -43,6 +46,80 @@ def _load_elo_draw(draw: list, tournament_name: str, draw_year: int) -> list[elo
         )
         for p in draw
     ]
+
+
+def _run_engine(
+    model: str,
+    exact_simulation: bool,
+    sim_draw: list,
+    simulations: int,
+    seed: int,
+    known_results: monte_carlo.KnownResults | None,
+    match_prob_cache: dict[tuple[str, str], float] | None = None,
+) -> dict[str, dict[str, int]]:
+    """Despacha al motor correcto (mismo `sim_draw` para las N corridas de
+    todos los snapshots de una edición en vivo -- solo cambia
+    `known_results` entre una y otra, ver `_generate_round_snapshots`).
+
+    `match_prob_cache`: solo lo usa `serve_return` -- compartirlo ENTRE
+    llamadas (una por ronda-snapshot) evita recalcular `match_probability`
+    para los mismos pares una y otra vez (medido: sin esto, generar los 7
+    snapshots tardaba visiblemente más que una corrida normal -- ver el
+    docstring de `serve_return.run_simulations_fast`)."""
+    if model == "elo":
+        return elo_model.run_simulations_elo(sim_draw, n_simulations=simulations, seed=seed, known_results=known_results)
+    if exact_simulation:
+        return monte_carlo.run_simulations(sim_draw, n_simulations=simulations, seed=seed, known_results=known_results)
+    return serve_return.run_simulations_fast(
+        sim_draw, n_simulations=simulations, seed=seed, known_results=known_results, cache=match_prob_cache,
+    )
+
+
+def _generate_round_snapshots(
+    tournament_name: str,
+    draw_year: int,
+    model: str,
+    exact_simulation: bool,
+    sim_draw: list,
+    simulations: int,
+    seed: int,
+    known_results: monte_carlo.KnownResults,
+) -> list[dict]:
+    """Fase 4 (D2/D5/D6): un snapshot de predicción por ronda de
+    `config.MATCH_ROUNDS` -- "entrando a la ronda X" = condicionado en TODOS
+    los resultados reales ya conocidos de rondas anteriores a X (parcial o
+    completo), simulando el resto. R128 siempre se genera (es la base, sin
+    condicionar nada); R64..F solo si el torneo ya arrancó (`known_results`
+    no vacío) -- antes de eso las 7 rondas darían la misma tabla sin
+    conditioning real, 7x el cómputo sin ninguna información nueva.
+
+    D6: una ronda cuyo snapshot guardado ya está `frozen` (todas las rondas
+    anteriores a ella están 100% jugadas en la realidad -- su conditioning
+    no puede cambiar más) no se recalcula, se reusa tal cual."""
+    existing = {s["round_name"]: s for s in repository.load_snapshots(tournament_name, draw_year, model)}
+    has_started = bool(known_results)
+    rounds_to_generate = [config.MATCH_ROUNDS[0]] + (config.MATCH_ROUNDS[1:] if has_started else [])
+    match_prob_cache: dict[tuple[str, str], float] = {}  # compartido entre TODAS las rondas -- ver docstring de _run_engine
+
+    snapshots: list[dict] = []
+    for round_name in rounds_to_generate:
+        prior_rounds = config.MATCH_ROUNDS[: config.MATCH_ROUNDS.index(round_name)]
+        all_prior_decided = all(
+            sum(1 for (r, _m) in known_results if r == p) >= config.MATCHES_PER_ROUND[p] for p in prior_rounds
+        )
+
+        cached = existing.get(round_name)
+        if cached is not None and cached["frozen"]:
+            snapshots.append(cached)
+            continue
+
+        filtered_known = {(r, m): pid for (r, m), pid in known_results.items() if r in prior_rounds}
+        counts = _run_engine(model, exact_simulation, sim_draw, simulations, seed, filtered_known, match_prob_cache)
+        repository.save_snapshot(tournament_name, draw_year, round_name, model, simulations, counts, frozen=all_prior_decided)
+        snapshots.append(
+            {"round_name": round_name, "n_simulations": simulations, "counts": counts, "frozen": all_prior_decided}
+        )
+    return snapshots
 
 
 def run_prediction(
@@ -56,6 +133,9 @@ def run_prediction(
     """Corre ingesta (si hace falta) + simulación Monte Carlo del cuadro y
     devuelve `(counts, players_by_id, meta)` -- la misma tripleta que
     consumen `render.render_probabilities` y `html_report.render_*_html`.
+    `counts` es siempre "la tabla más informada disponible ahora" -- para
+    una edición histórica, la única simulación; para una edición en vivo
+    (Fase 4), el último snapshot de `meta["round_snapshots"]` (ver abajo).
 
     Única fuente de esta lógica: la usan tanto `simular_usopen.main()` como
     `src/cli/server.py` (modo `--serve`), para no duplicar el pipeline entre
@@ -83,26 +163,49 @@ def run_prediction(
         ).fetchone()
     cutoff_date = cutoff_row[0] if cutoff_row else "?"
 
+    # Fase 4 (D8): el ESTADO del cuadro (quién ganó qué hasta ahora) se pide
+    # siempre fresco a Wikipedia, nunca de la ingesta ya hecha -- una edición
+    # en vivo puede tener resultados nuevos entre una corrida y la siguiente
+    # aunque `needs_ingest` haya sido False.
+    is_live = repository.is_live_draw(config.TOURNAMENT_NAME, draw_year)
+    known_results: monte_carlo.KnownResults = {}
+    if is_live:
+        print("Consultando el estado en vivo del cuadro (Wikipedia)...")
+        state = live_draw.fetch_live_bracket_state(config.TOURNAMENT_NAME, draw_year)
+        known_results = state.known_results
+
     print(f"Corriendo {simulations:,} simulaciones del cuadro ({len(draw)} jugadores, modelo: {model})...")
     if model == "elo":
-        elo_draw = _load_elo_draw(draw, config.TOURNAMENT_NAME, draw_year)
-        players_by_id = {p.player_id: p for p in elo_draw}
-        counts = elo_model.run_simulations_elo(elo_draw, n_simulations=simulations, seed=seed)
-    elif exact_simulation:
-        counts = monte_carlo.run_simulations(draw, n_simulations=simulations, seed=seed)
+        sim_draw = _load_elo_draw(draw, config.TOURNAMENT_NAME, draw_year)
+        players_by_id = {p.player_id: p for p in sim_draw}
     else:
-        counts = serve_return.run_simulations_fast(draw, n_simulations=simulations, seed=seed)
+        sim_draw = draw
 
-    note = (
-        f"Cuadro real de {config.TOURNAMENT_NAME} {draw_year} reconstruido desde resultados "
-        "históricos (Sackmann). El sorteo oficial en vivo llega en la Fase 4 del plan; "
-        "hasta entonces se simula la última edición completa disponible."
-        + (
+    round_snapshots: list[dict] = []
+    if is_live:
+        round_snapshots = _generate_round_snapshots(
+            config.TOURNAMENT_NAME, draw_year, model, exact_simulation, sim_draw, simulations, seed, known_results,
+        )
+        counts = round_snapshots[-1]["counts"]
+    else:
+        counts = _run_engine(model, exact_simulation, sim_draw, simulations, seed, known_results=None)
+
+    if is_live:
+        note = (
+            f"Cuadro oficial de {config.TOURNAMENT_NAME} {draw_year} EN VIVO (Fase 4): sorteo real "
+            "tomado de Wikipedia, actualizado con los resultados reales a medida que se juega el "
+            "torneo -- ver los snapshots por ronda más abajo."
+        )
+    else:
+        note = (
+            f"Cuadro real de {config.TOURNAMENT_NAME} {draw_year} reconstruido desde resultados "
+            "históricos (Sackmann)."
+        )
+    if model == "elo":
+        note += (
             " Modelo: Elo de superficie decide cada partido directamente (una sola moneda, "
             "sin juegos/sets) -- ver --help."
-            if model == "elo" else ""
         )
-    )
 
     meta = {
         "tournament_name": config.TOURNAMENT_NAME,
@@ -111,6 +214,9 @@ def run_prediction(
         "cutoff_date": cutoff_date,
         "note": note,
         "model": model,
+        "is_live": is_live,
+        "known_results": known_results,
+        "round_snapshots": round_snapshots,
     }
     return counts, players_by_id, meta
 
@@ -118,8 +224,9 @@ def run_prediction(
 # --- Cuadro proyectado (bracket) --------------------------------------------
 # Pedido explícito del usuario tras el gate: "quiero que se muestre el
 # bracket" -- ver PLAN_PAGINA_RESULTADOS.md, revisión post-gate #2.
-
-MATCH_ROUNDS = ["R128", "R64", "R32", "R16", "QF", "SF", "F"]
+# `MATCH_ROUNDS` vive en config.py (Fase 4: live_draw.py también la necesita
+# y src/data no puede importar de src/cli, ver el comentario en config.py).
+MATCH_ROUNDS = config.MATCH_ROUNDS
 
 
 def _win_probability_fn(model: str):
@@ -132,7 +239,9 @@ def _win_probability_fn(model: str):
     return lambda a, b: serve_return.match_probability(a, b)
 
 
-def build_predicted_bracket(players_by_id: dict[str, object], model: str) -> tuple[list[list[dict]], object]:
+def build_predicted_bracket(
+    players_by_id: dict[str, object], model: str, known_results: monte_carlo.KnownResults | None = None
+) -> tuple[list[list[dict]], object]:
     """Cuadro proyectado determinístico: en cada cruce real del draw, el
     favorito es quien tiene P(ganar) >= 0.5 según el modelo exacto, y avanza
     a enfrentar al favorito del cruce siguiente -- así hasta la final. Es UN
@@ -151,7 +260,12 @@ def build_predicted_bracket(players_by_id: dict[str, object], model: str) -> tup
     unitarios, arranca en la ronda que le corresponde: un draw de 2 jugadores
     es directamente "F", uno de 4 es "SF"+"F", etc.), cada una una lista de
     partidos `{"favorite", "underdog", "prob"}`; `champion` es el jugador que
-    gana la última."""
+    gana la última.
+
+    `known_results` (Fase 4): si el partido de este cruce ya se jugó de
+    verdad, el "favorito" mostrado es el ganador REAL (prob=1.0), no el que
+    de casualidad tenga p>=0.5 -- el cuadro proyectado de una edición en vivo
+    debe reflejar lo que ya pasó, no una proyección que lo contradiga."""
     win_prob = _win_probability_fn(model)
     current = list(players_by_id.values())
     n = len(current)
@@ -170,11 +284,17 @@ def build_predicted_bracket(players_by_id: dict[str, object], model: str) -> tup
         winners = []
         for i in range(0, len(current), 2):
             a, b = current[i], current[i + 1]
-            p_a = win_prob(a, b)
-            if p_a >= 0.5:
-                favorite, underdog, prob = a, b, p_a
+            known = monte_carlo.resolve_known_winner(a, b, round_name, i // 2 + 1, known_results)
+            if known is not None:
+                favorite = known
+                underdog = b if known is a else a
+                prob = 1.0
             else:
-                favorite, underdog, prob = b, a, 1 - p_a
+                p_a = win_prob(a, b)
+                if p_a >= 0.5:
+                    favorite, underdog, prob = a, b, p_a
+                else:
+                    favorite, underdog, prob = b, a, 1 - p_a
             matches.append({"round": round_name, "favorite": favorite, "underdog": underdog, "prob": prob})
             winners.append(favorite)
         rounds.append(matches)

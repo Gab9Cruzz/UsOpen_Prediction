@@ -49,7 +49,33 @@ CREATE TABLE IF NOT EXISTS cuadro_torneo (
     slot_index       INTEGER NOT NULL, -- posición 1..128 dentro del cuadro
     player_id        TEXT,
     seed             INTEGER,
+    -- Fase 4: tipo de entrada (Q=qualifier, WC=wildcard, LL=lucky loser,
+    -- PR=protected ranking) cuando el jugador no tiene seed numérico --
+    -- Sackmann lo trae en winner_entry/loser_entry, Wikipedia lo marca junto
+    -- al seed en el draw en vivo (src/data/live_draw.py). Puramente
+    -- informativo: ningún modelo de simulación lo lee.
+    entry_type       TEXT,
     source           TEXT,
     PRIMARY KEY (tournament_name, tournament_year, round_name, slot_index),
     FOREIGN KEY (player_id) REFERENCES jugadores(player_id)
+);
+
+-- Fase 4: snapshot de predicción "entrando a la ronda X" -- condicionado en
+-- los resultados reales ya conocidos de TODAS las rondas anteriores a X
+-- (parcial o completo, ver src/data/live_draw.py), simulando el resto. Una
+-- fila por (torneo, año, ronda, modelo); se pisa mientras la ronda anterior
+-- todavía no está 100% jugada en la realidad, y se deja de recalcular (se
+-- "congela") en cuanto lo está -- ver src/cli/pipeline.py::run_prediction.
+-- Para una edición histórica (sin resultados en vivo que trackear) esta
+-- tabla no se usa: solo aplica a ediciones ingeridas vía live_draw.
+CREATE TABLE IF NOT EXISTS snapshots_prediccion (
+    tournament_name TEXT NOT NULL,
+    tournament_year INTEGER NOT NULL,
+    round_name       TEXT NOT NULL,
+    model            TEXT NOT NULL,
+    n_simulations    INTEGER NOT NULL,
+    counts_json      TEXT NOT NULL,   -- counts[player_id][ronda_alcanzada] = veces, serializado
+    frozen           INTEGER NOT NULL DEFAULT 0,  -- 1 si todas las rondas anteriores ya están 100% jugadas en la realidad (no se vuelve a recalcular)
+    generated_at     TEXT NOT NULL,
+    PRIMARY KEY (tournament_name, tournament_year, round_name, model)
 );

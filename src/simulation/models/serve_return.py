@@ -31,7 +31,14 @@ import random
 import numpy as np
 
 from src import config
-from src.simulation.monte_carlo import ROUND_ORDER, Player, _point_probs, game_win_prob
+from src.simulation.monte_carlo import (
+    ROUND_ORDER,
+    KnownResults,
+    Player,
+    _point_probs,
+    game_win_prob,
+    resolve_known_winner,
+)
 
 _DEUCE_STATES = [
     (diff, server_is_a, first_of_pair)
@@ -192,7 +199,10 @@ def match_probability(a: Player, b: Player, best_of: int = config.BEST_OF) -> fl
 
 
 def simulate_tournament_fast(
-    rng: random.Random, draw: list[Player], cache: dict[tuple[str, str], float] | None = None
+    rng: random.Random,
+    draw: list[Player],
+    cache: dict[tuple[str, str], float] | None = None,
+    known_results: KnownResults | None = None,
 ) -> dict[str, str]:
     """Réplica rápida de `monte_carlo.simulate_tournament`: en vez de
     simular cada partido juego a juego (~100-200 sorteos), calcula su
@@ -207,7 +217,10 @@ def simulate_tournament_fast(
     dentro de un torneo (que nunca repite un par) no ahorra nada; hay que
     cachear ENTRE torneos. Sin este cache, `match_probability` -- que hace
     ~15 resoluciones de sistema lineal 12x12 por partido -- se recalcula
-    127 × N veces y la versión "rápida" queda más lenta que el motor real."""
+    127 × N veces y la versión "rápida" queda más lenta que el motor real.
+
+    `known_results` (Fase 4): ver `monte_carlo.simulate_tournament` -- misma
+    convención de rondas "jugada" vs "alcanzada"."""
     if cache is None:
         cache = {}
 
@@ -220,12 +233,16 @@ def simulate_tournament_fast(
     reached: dict[str, str] = {p.player_id: "R128" for p in draw}
     current_round = draw
     round_names = ROUND_ORDER[1:]
+    played_rounds = ROUND_ORDER[:-1]
 
-    for round_name in round_names:
+    for played_round, round_name in zip(played_rounds, round_names):
         winners: list[Player] = []
         for i in range(0, len(current_round), 2):
             a, b = current_round[i], current_round[i + 1]
-            winner = a if rng.random() < p_a_wins(a, b) else b
+            match_index = i // 2 + 1
+            winner = resolve_known_winner(a, b, played_round, match_index, known_results)
+            if winner is None:
+                winner = a if rng.random() < p_a_wins(a, b) else b
             reached[winner.player_id] = round_name
             winners.append(winner)
         current_round = winners
@@ -235,19 +252,34 @@ def simulate_tournament_fast(
 
 
 def run_simulations_fast(
-    draw: list[Player], n_simulations: int = config.DEFAULT_SIMULATIONS, seed: int = config.DEFAULT_SEED
+    draw: list[Player],
+    n_simulations: int = config.DEFAULT_SIMULATIONS,
+    seed: int = config.DEFAULT_SEED,
+    known_results: KnownResults | None = None,
+    cache: dict[tuple[str, str], float] | None = None,
 ) -> dict[str, dict[str, int]]:
     """Réplica rápida de `monte_carlo.run_simulations` -- ver
-    `simulate_tournament_fast`. Misma firma, mismo formato de salida."""
+    `simulate_tournament_fast`. Misma firma, mismo formato de salida.
+
+    `cache`: opcionalmente provisto por el caller (Fase 4,
+    `pipeline._generate_round_snapshots`) para compartirlo ADEMÁS entre
+    varias LLAMADAS a esta función -- p.ej. las 7 rondas condicionadas de
+    una edición en vivo son 7 torneos "distintos" (distinto `known_results`)
+    mezclando en gran parte los MISMOS jugadores, así que sin compartir el
+    cache entre llamadas se recalcula `match_probability` (~15 resoluciones
+    de sistema lineal por par) una vez por ronda para los mismos pares. Si
+    no se pasa, se crea uno nuevo (comportamiento de siempre, compartido
+    solo dentro de las N repeticiones de ESTA llamada)."""
     if len(draw) & (len(draw) - 1) != 0:
         raise ValueError(f"El cuadro debe tener una potencia de 2 de jugadores, recibió {len(draw)}")
 
     counts: dict[str, dict[str, int]] = {p.player_id: {r: 0 for r in ROUND_ORDER} for p in draw}
     rng = random.Random(seed)
-    cache: dict[tuple[str, str], float] = {}  # compartido entre las N repeticiones -- ver docstring de simulate_tournament_fast
+    if cache is None:
+        cache = {}
 
     for _ in range(n_simulations):
-        reached = simulate_tournament_fast(rng, draw, cache=cache)
+        reached = simulate_tournament_fast(rng, draw, cache=cache, known_results=known_results)
         for player_id, round_name in reached.items():
             idx = ROUND_ORDER.index(round_name)
             for r in ROUND_ORDER[: idx + 1]:

@@ -48,6 +48,46 @@ class Player:
 
 ROUND_ORDER = ["R128", "R64", "R32", "R16", "QF", "SF", "F", "CAMPEON"]
 
+# Fase 4 (sorteo en vivo): `known_results` condiciona la simulación con
+# resultados reales ya jugados -- ver `resolve_known_winner` y el docstring
+# de `simulate_tournament` para el porqué del desfase entre "ronda jugada" y
+# "ronda alcanzada" (la clave que usa `known_results`).
+KnownResults = dict[tuple[str, int], str]  # (ronda_jugada, índice de partido 1-based) -> player_id ganador
+
+
+def resolve_known_winner(
+    a: Player, b: Player, played_round: str, match_index: int, known_results: KnownResults | None
+) -> Player | None:
+    """Si `known_results` ya tiene el resultado real de este partido
+    (`played_round`, `match_index`), devuelve al ganador real (`a` o `b`,
+    según corresponda) -- `None` si el partido todavía no se jugó de verdad
+    (se debe simular normalmente).
+
+    `match_index` es 1-based, numerado dentro de `played_round` en el MISMO
+    orden que usan `simulate_tournament*` (posición del par en la lista
+    aplanada de ese momento) -- coincide con la numeración de
+    `src/data/live_draw.py` porque ambos derivan del mismo cuadro aplanado
+    sección por sección (ver el docstring de ese módulo).
+
+    Si el ganador real no es NI `a` NI `b`, es una desalineación de slots
+    entre el cuadro simulado y `known_results` (bug, no un caso esperado) --
+    se levanta en el momento en vez de devolver un ganador equivocado en
+    silencio."""
+    if not known_results:
+        return None
+    winner_id = known_results.get((played_round, match_index))
+    if winner_id is None:
+        return None
+    if winner_id == a.player_id:
+        return a
+    if winner_id == b.player_id:
+        return b
+    raise ValueError(
+        f"known_results indica que el ganador de {played_round} partido {match_index} es "
+        f"{winner_id!r}, pero ese cruce del cuadro simulado es entre {a.player_id!r} y "
+        f"{b.player_id!r} -- posible desalineación de slots entre el cuadro y los resultados reales."
+    )
+
 
 def game_win_prob(p: float) -> float:
     """P(ganar el juego) dado p = P(ganar un punto al saque). Fórmula cerrada estándar.
@@ -187,21 +227,38 @@ def simulate_match(rng: random.Random, a: Player, b: Player, best_of: int = conf
     return a if sets_a > sets_b else b
 
 
-def simulate_tournament(rng: random.Random, draw: list[Player]) -> dict[str, str]:
+def simulate_tournament(
+    rng: random.Random, draw: list[Player], known_results: KnownResults | None = None
+) -> dict[str, str]:
     """Simula un cuadro completo de eliminación directa.
 
     Devuelve {player_id: ronda_mas_lejana_alcanzada}.
+
+    `known_results` (Fase 4, sorteo en vivo): en cada ronda, el partido que
+    ya se jugó de verdad usa el ganador real (`resolve_known_winner`) en vez
+    de tirar la moneda -- igual en las N repeticiones, porque es un hecho ya
+    consumado, no una probabilidad. Nota sobre las etiquetas: el bucle de
+    abajo usa `round_names = ROUND_ORDER[1:]` para poder escribir en
+    `reached` la ronda ALCANZADA por el ganador (p.ej. ganar el partido de
+    R128 te hace alcanzar "R64") -- por eso la ronda JUGADA en cada
+    iteración es la anterior en `ROUND_ORDER` (`played_round`), que es la
+    que efectivamente usa `known_results` (esas claves las arma
+    `src/data/live_draw.py` con nombres de ronda "jugada": R128, R64, ..., F).
     """
     reached: dict[str, str] = {p.player_id: "R128" for p in draw}
     current_round = draw
     # de R64 a CAMPEON: el último elemento simula la final y produce al campeón
     round_names = ROUND_ORDER[1:]
+    played_rounds = ROUND_ORDER[:-1]  # R128..F -- la ronda que se juega en cada iteración, ver docstring
 
-    for round_name in round_names:
+    for played_round, round_name in zip(played_rounds, round_names):
         winners: list[Player] = []
         for i in range(0, len(current_round), 2):
             a, b = current_round[i], current_round[i + 1]
-            winner = simulate_match(rng, a, b)
+            match_index = i // 2 + 1
+            winner = resolve_known_winner(a, b, played_round, match_index, known_results)
+            if winner is None:
+                winner = simulate_match(rng, a, b)
             reached[winner.player_id] = round_name
             winners.append(winner)
         current_round = winners
@@ -211,7 +268,10 @@ def simulate_tournament(rng: random.Random, draw: list[Player]) -> dict[str, str
 
 
 def run_simulations(
-    draw: list[Player], n_simulations: int = config.DEFAULT_SIMULATIONS, seed: int = config.DEFAULT_SEED
+    draw: list[Player],
+    n_simulations: int = config.DEFAULT_SIMULATIONS,
+    seed: int = config.DEFAULT_SEED,
+    known_results: KnownResults | None = None,
 ) -> dict[str, dict[str, int]]:
     """Corre N simulaciones del torneo y acumula, por jugador, cuántas veces alcanzó cada ronda."""
     if len(draw) & (len(draw) - 1) != 0:
@@ -223,7 +283,7 @@ def run_simulations(
     rng = random.Random(seed)
 
     for _ in range(n_simulations):
-        reached = simulate_tournament(rng, draw)
+        reached = simulate_tournament(rng, draw, known_results=known_results)
         max_idx = {}
         for player_id, round_name in reached.items():
             idx = ROUND_ORDER.index(round_name)

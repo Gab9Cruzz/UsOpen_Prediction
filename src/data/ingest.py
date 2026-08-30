@@ -21,7 +21,7 @@ from datetime import datetime
 import pandas as pd
 
 from src import config
-from src.data import fetchers
+from src.data import fetchers, live_draw
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +51,32 @@ def load_matches_for_years(years: list[int]) -> pd.DataFrame:
 def cutoff_date_for(tournament_name: str, draw_year: int, all_matches: pd.DataFrame) -> int:
     """Wrapper público de `_cutoff_date_for` — ver `load_matches_for_years`."""
     return _cutoff_date_for(tournament_name, draw_year, all_matches)
+
+
+def resolve_cutoff(tournament_name: str, draw_year: int, all_matches: pd.DataFrame) -> int:
+    """Fecha de corte (yyyymmdd int) para las métricas de saque/resto de esa
+    edición. Para una edición ya jugada, es la fecha real de inicio tomada
+    del propio dataset (`_cutoff_date_for`, sin fuga -- nunca usa la propia
+    edición ni ediciones futuras).
+
+    Para una edición todavía no jugada (Fase 4: sin R128 en Sackmann, el
+    motor va a usar `live_draw` más abajo en `run_ingest`) no hay fecha real
+    que leer de ahí -- se usa la fecha de hoy. Es correcto por diseño, no un
+    workaround: "todo lo disponible hasta el momento de simular" es
+    exactamente la data sin fuga cuando el torneo objetivo todavía no generó
+    ningún resultado propio que filtrar. (Caso borde documentado: si alguien
+    corre `--update-data` ya empezado el torneo y Sackmann todavía no
+    publicó el R128 real, esto podría colar partidos ya jugados de la propia
+    edición en las métricas de esos jugadores -- de baja probabilidad, y se
+    autocorrige solo en cuanto Sackmann publica el R128 real, porque ese día
+    `_cutoff_date_for` vuelve a encontrar la edición y deja de caer acá.)
+    Se usa también para el calentamiento de Elo (`pipeline._load_elo_draw`),
+    que antes llamaba a `cutoff_date_for` directo y se rompía igual que
+    `run_ingest` para una edición en vivo."""
+    try:
+        return _cutoff_date_for(tournament_name, draw_year, all_matches)
+    except ValueError:
+        return int(datetime.utcnow().strftime("%Y%m%d"))
 
 
 def latest_rank_before_cutoff(matches: pd.DataFrame, cutoff_date: int) -> pd.DataFrame:
@@ -289,6 +315,14 @@ def build_draw(all_matches: pd.DataFrame, tournament_name: str, draw_year: int) 
     Sackmann numera match_num consecutivamente dentro de cada ronda siguiendo
     el orden real del cuadro (bracket order). Ordenando R128 por match_num se
     recupera la posición 1..128 real del sorteo oficial de esa edición.
+
+    Incluye `full_name`/`country`/`entry_type` tomados del propio partido
+    (Sackmann trae `winner_ioc`/`winner_entry`, no solo el id) -- así
+    `run_ingest` no necesita re-derivarlos de `all_matches` por separado para
+    el fallback de jugadores sin métricas (ver `missing_ids` más abajo), y el
+    DataFrame que devuelve esta función tiene la MISMA forma que
+    `live_draw.fetch_live_bracket_state(...).draw` (Fase 4): intercambiables
+    para el resto de `run_ingest`.
     """
     mask = (
         all_matches["tourney_name"].str.contains(tournament_name, case=False, na=False)
@@ -299,47 +333,26 @@ def build_draw(all_matches: pd.DataFrame, tournament_name: str, draw_year: int) 
     if r128.empty:
         raise ValueError(f"No se encontró el cuadro R128 de {tournament_name} {draw_year}")
 
+    def _side(m, prefix: str, slot: int) -> dict:
+        return {
+            "tournament_name": tournament_name,
+            "tournament_year": draw_year,
+            "round_name": "R128",
+            "slot_index": slot,
+            "player_id": str(int(m[f"{prefix}_id"])),
+            "full_name": m[f"{prefix}_name"],
+            "country": m[f"{prefix}_ioc"] if pd.notna(m.get(f"{prefix}_ioc")) else None,
+            "seed": m[f"{prefix}_seed"] if pd.notna(m[f"{prefix}_seed"]) else None,
+            "entry_type": m[f"{prefix}_entry"] if pd.notna(m.get(f"{prefix}_entry")) else None,
+            "source": "sackmann_r128_reconstructed",
+        }
+
     rows = []
     for slot_pair, (_, m) in enumerate(r128.iterrows()):
         base = slot_pair * 2 + 1
-        rows.append(
-            {
-                "tournament_name": tournament_name,
-                "tournament_year": draw_year,
-                "round_name": "R128",
-                "slot_index": base,
-                "player_id": str(int(m["winner_id"])),
-                "seed": m["winner_seed"] if pd.notna(m["winner_seed"]) else None,
-                "source": "sackmann_r128_reconstructed",
-            }
-        )
-        rows.append(
-            {
-                "tournament_name": tournament_name,
-                "tournament_year": draw_year,
-                "round_name": "R128",
-                "slot_index": base + 1,
-                "player_id": str(int(m["loser_id"])),
-                "seed": m["loser_seed"] if pd.notna(m["loser_seed"]) else None,
-                "source": "sackmann_r128_reconstructed",
-            }
-        )
+        rows.append(_side(m, "winner", base))
+        rows.append(_side(m, "loser", base + 1))
     return pd.DataFrame(rows)
-
-
-def _draw_player_names(all_matches: pd.DataFrame, tournament_name: str, draw_year: int) -> dict[str, str]:
-    """player_id -> nombre, tal como aparece en las filas R128 del propio cuadro."""
-    mask = (
-        all_matches["tourney_name"].str.contains(tournament_name, case=False, na=False)
-        & (all_matches["tourney_date"] // 10000 == draw_year)
-        & (all_matches["round"] == "R128")
-    )
-    r128 = all_matches.loc[mask]
-    names: dict[str, str] = {}
-    for _, m in r128.iterrows():
-        names[str(int(m["winner_id"]))] = m["winner_name"]
-        names[str(int(m["loser_id"]))] = m["loser_name"]
-    return names
 
 
 def _load_players_meta() -> pd.DataFrame:
@@ -374,20 +387,33 @@ def _migrate_schema(conn: sqlite3.Connection) -> None:
         conn.executescript("DROP TABLE IF EXISTS jugadores; DROP TABLE IF EXISTS metricas_superficie;")
         conn.executescript(config.SCHEMA_PATH.read_text(encoding="utf-8"))
 
+    # Fase 4: `cuadro_torneo` puede venir de una base creada antes de que
+    # existiera `entry_type` -- mismo criterio que arriba (tabla 100%
+    # derivada, migración destructiva aceptable).
+    cuadro_cols = {row[1] for row in conn.execute("PRAGMA table_info(cuadro_torneo)")}
+    if cuadro_cols and "entry_type" not in cuadro_cols:
+        logger.warning("Esquema viejo detectado en cuadro_torneo (falta entry_type) — migrando.")
+        conn.executescript("DROP TABLE IF EXISTS cuadro_torneo;")
+        conn.executescript(config.SCHEMA_PATH.read_text(encoding="utf-8"))
+
 
 def run_ingest(
     draw_year: int = config.DEFAULT_DRAW_YEAR,
     years_back: int = config.YEARS_BACK,
     surface: str = config.SURFACE,
     tournament_name: str = config.TOURNAMENT_NAME,
-    db_path=config.DB_PATH,
+    db_path=None,
     force_download: bool = False,
 ) -> None:
+    # db_path=None (no =config.DB_PATH): mismo motivo que repository.py --
+    # un default se fija al importar el módulo, así que reasignar
+    # config.DB_PATH después (tests que aíslan su propia base) no lo movería.
+    db_path = db_path or config.DB_PATH
     fetched = fetchers.fetch_all(draw_year, years_back, force=force_download)
     logger.info("Años descargados: %s", fetched["years"])
 
     all_matches = _load_matches(fetched["years"])
-    cutoff = _cutoff_date_for(tournament_name, draw_year, all_matches)
+    cutoff = resolve_cutoff(tournament_name, draw_year, all_matches)
 
     metrics = compute_surface_metrics(all_matches, surface, cutoff)
     ranks = _latest_rank_before_cutoff(all_matches, cutoff)
@@ -419,25 +445,46 @@ def run_ingest(
     jugadores["updated_at"] = now
     jugadores = jugadores.drop_duplicates(subset=["player_id"])
 
-    draw_df = build_draw(all_matches, tournament_name, draw_year)
+    # Fase 4: reconstrucción histórica primero (funciona igual que siempre
+    # para cualquier edición ya jugada); si Sackmann todavía no tiene el R128
+    # de esta edición (el torneo no se jugó todavía), cae al sorteo oficial
+    # en vivo (Wikipedia, ver live_draw.py) -- sin flag, sin distinguir años
+    # a mano: en cuanto Sackmann publique los resultados reales, esta misma
+    # llamada vuelve a tomar el camino histórico sola.
+    try:
+        draw_df = build_draw(all_matches, tournament_name, draw_year)
+    except ValueError:
+        logger.info(
+            "Sin R128 histórico para %s %d -- usando el sorteo oficial en vivo (Wikipedia).",
+            tournament_name, draw_year,
+        )
+        state = live_draw.fetch_live_bracket_state(tournament_name, draw_year, force=force_download)
+        draw_df = pd.DataFrame(
+            [{**row, "round_name": "R128", "tournament_name": tournament_name, "tournament_year": draw_year}
+             for row in state.draw]
+        )
 
     # Un jugador del cuadro puede no tener partidos en Hard antes del corte
     # (p.ej. viene de challengers en polvo de ladrillo, o es un qualifier sin
     # historial ATP) y por lo tanto no aparece en `metrics`. No puede faltar
     # en `jugadores` igual: rompería el emparejamiento de slots del cuadro.
-    # Se completa con el nombre real tomado del propio partido del cuadro y,
-    # si existe, sus metadatos de atp_players.csv.
+    # Se completa con el nombre/país que ya trae `draw_df` (Sackmann para el
+    # camino histórico, Wikipedia+Sackmann-por-id para el camino en vivo --
+    # `build_draw`/`live_draw.fetch_live_bracket_state` devuelven la misma
+    # forma, así este fallback no necesita saber de cuál de las dos vino).
     missing_ids = set(draw_df["player_id"]) - set(jugadores["player_id"])
     if missing_ids:
-        draw_names = _draw_player_names(all_matches, tournament_name, draw_year)
+        draw_by_id = draw_df.set_index("player_id")
         fallback_rows = []
         for pid in missing_ids:
             meta = players_meta.loc[pid] if pid in players_meta.index else None
+            draw_row = draw_by_id.loc[pid] if pid in draw_by_id.index else None
             fallback_rows.append(
                 {
                     "player_id": pid,
-                    "full_name": draw_names.get(pid, pid),
-                    "country": meta["ioc"] if meta is not None else None,
+                    "full_name": draw_row["full_name"] if draw_row is not None else pid,
+                    "country": (draw_row["country"] if draw_row is not None else None)
+                    or (meta["ioc"] if meta is not None else None),
                     "hand": meta["hand"] if meta is not None else None,
                     "height_cm": meta["height"] if meta is not None else None,
                     "ranking_atp": None,
@@ -480,7 +527,11 @@ def run_ingest(
         )
         jugadores.to_sql("jugadores", conn, if_exists="append", index=False)
         metricas_superficie.to_sql("metricas_superficie", conn, if_exists="append", index=False)
-        draw_df.to_sql("cuadro_torneo", conn, if_exists="append", index=False)
+        # `draw_df` trae full_name/country de más (los usa el fallback de
+        # `missing_ids` arriba) -- `cuadro_torneo` no tiene esas columnas,
+        # solo las propias del esquema.
+        cuadro_cols = ["tournament_name", "tournament_year", "round_name", "slot_index", "player_id", "seed", "entry_type", "source"]
+        draw_df[cuadro_cols].to_sql("cuadro_torneo", conn, if_exists="append", index=False)
         conn.commit()
 
     logger.info(

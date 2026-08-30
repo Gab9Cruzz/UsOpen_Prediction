@@ -106,6 +106,8 @@ def _results_html(state: dict) -> str:
     return html_report.render_results_table(
         state["counts"], state["players_by_id"], state["simulations"],
         extra_content=controls, model=state["model"],
+        known_results=state.get("meta", {}).get("known_results"),
+        round_snapshots=state.get("meta", {}).get("round_snapshots"),
     )
 
 

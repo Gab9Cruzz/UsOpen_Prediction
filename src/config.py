@@ -61,3 +61,35 @@ BEST_OF = 5  # Grand Slam masculino
 # B8 (plan de mejora): el set decisivo del US Open usa tie-break a 10 puntos
 # desde 2022, no a 7 como el resto de los sets.
 DECIDING_SET_TIEBREAK_TARGET = 10
+
+# Rondas de un cuadro de 128, en orden de juego. Vive acá (no en
+# src/cli/pipeline.py, donde se usaba antes) porque src/data/live_draw.py
+# también la necesita para nombrar rondas al parsear el estado real del
+# cuadro, y src/data no puede importar de src/cli (capas: data no depende de
+# cli, ver plan sección 1.1) -- moverla al módulo de configuración, que
+# ambas capas ya importan, evita esa dependencia invertida sin duplicar la
+# lista en dos lugares.
+MATCH_ROUNDS = ["R128", "R64", "R32", "R16", "QF", "SF", "F"]
+# Cuántos partidos tiene cada ronda de un cuadro de 128 -- lo usa
+# src/cli/pipeline.py para saber si una ronda ya está 100% jugada en la
+# realidad (y por lo tanto su snapshot de predicción puede "congelarse").
+MATCHES_PER_ROUND = {"R128": 64, "R64": 32, "R32": 16, "R16": 8, "QF": 4, "SF": 2, "F": 1}
+
+# --- Fase 4: sorteo oficial en vivo (Wikipedia) ------------------------------
+# Cuando build_draw (reconstrucción histórica de Sackmann, ver ingest.py) no
+# encuentra R128 para la edición pedida -- porque el torneo todavía no se
+# jugó -- run_ingest cae a esto: el sorteo ya publicado, parseado desde
+# Wikipedia (los editores arman el bracket completo en cuanto se anuncia,
+# formato `{{16TeamBracket-Compact-Tennis5}}` por sección + `{{8TeamBracket-
+# Tennis5}}` para cuartos/semis/final -- ver src/data/live_draw.py). Deja de
+# usarse solo, sin tocar código, en cuanto Sackmann publique los resultados
+# reales de esa edición.
+WIKIPEDIA_API_URL = "https://en.wikipedia.org/w/api.php"
+# Título del artículo de Wikipedia por torneo (normalizado a minúsculas) --
+# hoy solo cubre el US Open masculino, que es todo lo que soporta el resto
+# del proyecto (SURFACE/TOURNAMENT_NAME arriba tampoco distinguen otro cuadro).
+LIVE_DRAW_WIKI_TITLES = {
+    "us open": "{year} US Open – Men's singles",
+}
+LIVE_DRAW_SOURCE = "wikipedia_live"
+LIVE_DRAW_CACHE_TEMPLATE = "live_draw_{tournament}_{year}.json"

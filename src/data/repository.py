@@ -6,8 +6,10 @@ Carlo nunca toca SQLite directamente.
 
 from __future__ import annotations
 
+import json
 import logging
 import sqlite3
+from datetime import datetime
 
 from src import config
 from src.simulation.monte_carlo import Player
@@ -15,11 +17,21 @@ from src.simulation.monte_carlo import Player
 logger = logging.getLogger(__name__)
 
 
-def draw_is_ready(tournament_name: str, tournament_year: int, db_path=config.DB_PATH) -> bool:
+def draw_is_ready(tournament_name: str, tournament_year: int, db_path=None) -> bool:
     """True si el cuadro de esa edición está completo y sus 128 jugadores
     existen en `jugadores` (jugadores/metricas_superficie no están
     particionados por año: reingestar otra edición los reescribe por
-    completo, así que un cuadro viejo puede quedar "huérfano")."""
+    completo, así que un cuadro viejo puede quedar "huérfano").
+
+    `db_path=None` (no `=config.DB_PATH`) a propósito: un default evaluado
+    en la firma de la función se fija UNA sola vez, al importar el módulo --
+    si algo reasigna `config.DB_PATH` después (p.ej. un test que aísla su
+    propia base con `monkeypatch.setattr(config, "DB_PATH", ...)`), esta
+    función seguiría usando el valor viejo. Resolviendo `config.DB_PATH`
+    ADENTRO del cuerpo se lee el valor ACTUAL en cada llamada. Mismo criterio
+    en el resto de las funciones de este módulo (bug real, encontrado
+    escribiendo los tests de Fase 4 -- ver tests/test_snapshots.py)."""
+    db_path = db_path or config.DB_PATH
     try:
         with sqlite3.connect(db_path) as conn:
             count = conn.execute(
@@ -36,8 +48,9 @@ def draw_is_ready(tournament_name: str, tournament_year: int, db_path=config.DB_
 
 
 def load_draw(
-    tournament_name: str, tournament_year: int, db_path=config.DB_PATH
+    tournament_name: str, tournament_year: int, db_path=None
 ) -> tuple[list[Player], dict[str, Player]]:
+    db_path = db_path or config.DB_PATH  # ver el comentario en draw_is_ready sobre por qué no =config.DB_PATH
     # LEFT JOIN a propósito: un jugador sin partidos en Hard antes del corte
     # (p.ej. un wildcard joven que venía de challengers en polvo de ladrillo)
     # no debe desaparecer del cuadro (rompería el emparejamiento de slots
@@ -98,3 +111,96 @@ def load_draw(
         )
     players_by_id = {p.player_id: p for p in draw}
     return draw, players_by_id
+
+
+# --- Fase 4: sorteo en vivo + snapshots de predicción por ronda -------------
+
+
+def is_live_draw(tournament_name: str, tournament_year: int, db_path=None) -> bool:
+    """True si el cuadro de esa edición viene del sorteo oficial en vivo
+    (`src/data/live_draw.py`, `source = config.LIVE_DRAW_SOURCE`) en vez de
+    reconstruido de resultados históricos. Solo para esas ediciones tiene
+    sentido trackear resultados en vivo y generar snapshots por ronda
+    (`src/cli/pipeline.py::run_prediction`) -- una edición histórica ya
+    tiene TODOS sus resultados reales, no hay nada "en progreso" que trackear."""
+    db_path = db_path or config.DB_PATH  # ver el comentario en draw_is_ready
+    try:
+        with sqlite3.connect(db_path) as conn:
+            row = conn.execute(
+                """
+                SELECT 1 FROM cuadro_torneo
+                WHERE tournament_name = ? AND tournament_year = ? AND round_name = 'R128' AND source = ?
+                LIMIT 1
+                """,
+                (tournament_name, tournament_year, config.LIVE_DRAW_SOURCE),
+            ).fetchone()
+    except sqlite3.OperationalError:
+        return False
+    return row is not None
+
+
+def save_snapshot(
+    tournament_name: str,
+    tournament_year: int,
+    round_name: str,
+    model: str,
+    n_simulations: int,
+    counts: dict[str, dict[str, int]],
+    frozen: bool,
+    db_path=None,
+) -> None:
+    """Guarda (upsert) el snapshot de predicción "entrando a `round_name`"
+    -- ver el docstring de la tabla `snapshots_prediccion` en schema.sql."""
+    db_path = db_path or config.DB_PATH  # ver el comentario en draw_is_ready
+    with sqlite3.connect(db_path) as conn:
+        conn.executescript(config.SCHEMA_PATH.read_text(encoding="utf-8"))
+        conn.execute(
+            """
+            INSERT INTO snapshots_prediccion
+                (tournament_name, tournament_year, round_name, model, n_simulations, counts_json, frozen, generated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (tournament_name, tournament_year, round_name, model) DO UPDATE SET
+                n_simulations = excluded.n_simulations,
+                counts_json = excluded.counts_json,
+                frozen = excluded.frozen,
+                generated_at = excluded.generated_at
+            """,
+            (
+                tournament_name, tournament_year, round_name, model,
+                n_simulations, json.dumps(counts), int(frozen), datetime.utcnow().isoformat(),
+            ),
+        )
+        conn.commit()
+
+
+def load_snapshots(
+    tournament_name: str, tournament_year: int, model: str, db_path=None
+) -> list[dict]:
+    """Todos los snapshots guardados de esa edición/modelo, en orden de
+    ronda (`config.MATCH_ROUNDS`) -- lo que consume `html_report.py` para
+    apilarlos "R128 arriba, F abajo" tal como se pidió."""
+    db_path = db_path or config.DB_PATH  # ver el comentario en draw_is_ready
+    try:
+        with sqlite3.connect(db_path) as conn:
+            rows = conn.execute(
+                """
+                SELECT round_name, n_simulations, counts_json, frozen, generated_at
+                FROM snapshots_prediccion
+                WHERE tournament_name = ? AND tournament_year = ? AND model = ?
+                """,
+                (tournament_name, tournament_year, model),
+            ).fetchall()
+    except sqlite3.OperationalError:
+        return []
+
+    by_round = {
+        round_name: {
+            "round_name": round_name,
+            "n_simulations": n_simulations,
+            "counts": json.loads(counts_json),
+            "frozen": bool(frozen),
+            "generated_at": generated_at,
+        }
+        for round_name, n_simulations, counts_json, frozen, generated_at in rows
+    }
+    return [by_round[r] for r in config.MATCH_ROUNDS if r in by_round]
