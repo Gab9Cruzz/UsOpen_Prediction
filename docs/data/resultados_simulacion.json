@@ -1,0 +1,3382 @@
+{
+  "meta": {
+    "tournament_name": "Us Open",
+    "tournament_year": 2026,
+    "generated_at": "2026-08-30T04:57:05Z",
+    "model": "serve_return",
+    "n_simulations": 10000,
+    "is_live": true,
+    "cutoff_date": "20260830",
+    "note": "Cuadro oficial de Us Open 2026 EN VIVO (Fase 4): sorteo real tomado de Wikipedia, actualizado con los resultados reales a medida que se juega el torneo -- ver los snapshots por ronda más abajo."
+  },
+  "players": [
+    {
+      "player_id": "207989",
+      "full_name": "Carlos Alcaraz",
+      "seed": 2,
+      "probabilities": {
+        "R32": 0.0467,
+        "R16": 0.0457,
+        "QF": 0.0402,
+        "SF": 0.0374,
+        "F": 0.03,
+        "CAMPEON": 0.0248
+      }
+    },
+    {
+      "player_id": "104925",
+      "full_name": "Novak Djokovic",
+      "seed": 4,
+      "probabilities": {
+        "R32": 0.0418,
+        "R16": 0.0389,
+        "QF": 0.0316,
+        "SF": 0.0212,
+        "F": 0.0079,
+        "CAMPEON": 0.0052
+      }
+    },
+    {
+      "player_id": "100644",
+      "full_name": "Alexander Zverev",
+      "seed": 1,
+      "probabilities": {
+        "R32": 0.0391,
+        "R16": 0.0316,
+        "QF": 0.0257,
+        "SF": 0.018,
+        "F": 0.0117,
+        "CAMPEON": 0.0048
+      }
+    },
+    {
+      "player_id": "106421",
+      "full_name": "Daniil Medvedev",
+      "seed": 7,
+      "probabilities": {
+        "R32": 0.0424,
+        "R16": 0.034,
+        "QF": 0.0296,
+        "SF": 0.0166,
+        "F": 0.0052,
+        "CAMPEON": 0.0036
+      }
+    },
+    {
+      "player_id": "200282",
+      "full_name": "Alex De Minaur",
+      "seed": 6,
+      "probabilities": {
+        "R32": 0.0362,
+        "R16": 0.0329,
+        "QF": 0.0265,
+        "SF": 0.0156,
+        "F": 0.0099,
+        "CAMPEON": 0.0034
+      }
+    },
+    {
+      "player_id": "126203",
+      "full_name": "Taylor Fritz",
+      "seed": 9,
+      "probabilities": {
+        "R32": 0.0449,
+        "R16": 0.0331,
+        "QF": 0.0288,
+        "SF": 0.0179,
+        "F": 0.008,
+        "CAMPEON": 0.002
+      }
+    },
+    {
+      "player_id": "126205",
+      "full_name": "Tommy Paul",
+      "seed": 20,
+      "probabilities": {
+        "R32": 0.0411,
+        "R16": 0.0342,
+        "QF": 0.0076,
+        "SF": 0.006,
+        "F": 0.0028,
+        "CAMPEON": 0.0015
+      }
+    },
+    {
+      "player_id": "200000",
+      "full_name": "Felix Auger Aliassime",
+      "seed": 3,
+      "probabilities": {
+        "R32": 0.033,
+        "R16": 0.0263,
+        "QF": 0.0186,
+        "SF": 0.0121,
+        "F": 0.0061,
+        "CAMPEON": 0.0011
+      }
+    },
+    {
+      "player_id": "207518",
+      "full_name": "Lorenzo Musetti",
+      "seed": 13,
+      "probabilities": {
+        "R32": 0.0331,
+        "R16": 0.0263,
+        "QF": 0.0111,
+        "SF": 0.0057,
+        "F": 0.0029,
+        "CAMPEON": 0.0008
+      }
+    },
+    {
+      "player_id": "126094",
+      "full_name": "Andrey Rublev",
+      "seed": 23,
+      "probabilities": {
+        "R32": 0.0255,
+        "R16": 0.0183,
+        "QF": 0.0068,
+        "SF": 0.0035,
+        "F": 0.0011,
+        "CAMPEON": 0.0006
+      }
+    },
+    {
+      "player_id": "210150",
+      "full_name": "Jakub Mensik",
+      "seed": 17,
+      "probabilities": {
+        "R32": 0.0224,
+        "R16": 0.0136,
+        "QF": 0.0045,
+        "SF": 0.0023,
+        "F": 0.001,
+        "CAMPEON": 0.0005
+      }
+    },
+    {
+      "player_id": "111575",
+      "full_name": "Karen Khachanov",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.014,
+        "R16": 0.0097,
+        "QF": 0.0051,
+        "SF": 0.0024,
+        "F": 0.0012,
+        "CAMPEON": 0.0004
+      }
+    },
+    {
+      "player_id": "105777",
+      "full_name": "Grigor Dimitrov",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0179,
+        "R16": 0.0063,
+        "QF": 0.0035,
+        "SF": 0.0011,
+        "F": 0.0007,
+        "CAMPEON": 0.0002
+      }
+    },
+    {
+      "player_id": "134770",
+      "full_name": "Casper Ruud",
+      "seed": 19,
+      "probabilities": {
+        "R32": 0.035,
+        "R16": 0.023,
+        "QF": 0.0099,
+        "SF": 0.0039,
+        "F": 0.0022,
+        "CAMPEON": 0.0002
+      }
+    },
+    {
+      "player_id": "122298",
+      "full_name": "Botic Van De Zandschulp",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0108,
+        "R16": 0.0071,
+        "QF": 0.0035,
+        "SF": 0.0011,
+        "F": 0.0008,
+        "CAMPEON": 0.0002
+      }
+    },
+    {
+      "player_id": "200514",
+      "full_name": "Jurij Rodionov",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0232,
+        "R16": 0.0124,
+        "QF": 0.0067,
+        "SF": 0.0037,
+        "F": 0.0014,
+        "CAMPEON": 0.0001
+      }
+    },
+    {
+      "player_id": "104792",
+      "full_name": "Gael Monfils",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0139,
+        "R16": 0.0055,
+        "QF": 0.0022,
+        "SF": 0.0008,
+        "F": 0.0004,
+        "CAMPEON": 0.0001
+      }
+    },
+    {
+      "player_id": "210530",
+      "full_name": "Learner Tien",
+      "seed": 14,
+      "probabilities": {
+        "R32": 0.0187,
+        "R16": 0.0099,
+        "QF": 0.0047,
+        "SF": 0.0018,
+        "F": 0.0008,
+        "CAMPEON": 0.0001
+      }
+    },
+    {
+      "player_id": "202103",
+      "full_name": "Francisco Cerundolo",
+      "seed": 24,
+      "probabilities": {
+        "R32": 0.0314,
+        "R16": 0.0117,
+        "QF": 0.0087,
+        "SF": 0.0037,
+        "F": 0.0009,
+        "CAMPEON": 0.0001
+      }
+    },
+    {
+      "player_id": "144719",
+      "full_name": "Jaume Munar",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0298,
+        "R16": 0.0096,
+        "QF": 0.006,
+        "SF": 0.0015,
+        "F": 0.0004,
+        "CAMPEON": 0.0001
+      }
+    },
+    {
+      "player_id": "144750",
+      "full_name": "Lloyd Harris",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0122,
+        "R16": 0.0054,
+        "QF": 0.0024,
+        "SF": 0.0002,
+        "F": 0.0001,
+        "CAMPEON": 0.0001
+      }
+    },
+    {
+      "player_id": "209950",
+      "full_name": "Arthur Fils",
+      "seed": 10,
+      "probabilities": {
+        "R32": 0.0197,
+        "R16": 0.0134,
+        "QF": 0.0076,
+        "SF": 0.0015,
+        "F": 0.0007,
+        "CAMPEON": 0.0001
+      }
+    },
+    {
+      "player_id": "132283",
+      "full_name": "Lorenzo Sonego",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0037,
+        "R16": 0.0016,
+        "QF": 0.0007,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "111460",
+      "full_name": "Quentin Halys",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0036,
+        "R16": 0.0016,
+        "QF": 0.0004,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "207680",
+      "full_name": "Facundo Diaz Acosta",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0036,
+        "R16": 0.001,
+        "QF": 0.0003,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200615",
+      "full_name": "Alexei Popyrin",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0106,
+        "R16": 0.0024,
+        "QF": 0.0011,
+        "SF": 0.0003,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "105870",
+      "full_name": "Yannick Hanfmann",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0138,
+        "R16": 0.0037,
+        "QF": 0.0018,
+        "SF": 0.0005,
+        "F": 0.0002,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "126214",
+      "full_name": "Alejandro Tabilo",
+      "seed": 25,
+      "probabilities": {
+        "R32": 0.0077,
+        "R16": 0.0018,
+        "QF": 0.0009,
+        "SF": 0.0001,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209260",
+      "full_name": "Luciano Darderi",
+      "seed": 21,
+      "probabilities": {
+        "R32": 0.0053,
+        "R16": 0.0013,
+        "QF": 0.0002,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "207784",
+      "full_name": "Harry Wendelken",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0184,
+        "R16": 0.0056,
+        "QF": 0.0014,
+        "SF": 0.0003,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "207494",
+      "full_name": "Dalibor Svrcina",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0159,
+        "R16": 0.0051,
+        "QF": 0.0008,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208316",
+      "full_name": "Valentin Royer",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0104,
+        "R16": 0.003,
+        "QF": 0.0004,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208013",
+      "full_name": "Dane Sweeny",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0036,
+        "R16": 0.0012,
+        "QF": 0.0002,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "144895",
+      "full_name": "Corentin Moutet",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0105,
+        "R16": 0.0064,
+        "QF": 0.0012,
+        "SF": 0.0003,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209259",
+      "full_name": "Arthur Fery",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0028,
+        "R16": 0.0011,
+        "QF": 0.0003,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "212588",
+      "full_name": "Rafael Jodar",
+      "seed": 12,
+      "probabilities": {
+        "R32": 0.0064,
+        "R16": 0.0023,
+        "QF": 0.0002,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "106423",
+      "full_name": "Thanasi Kokkinakis",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0204,
+        "R16": 0.0103,
+        "QF": 0.003,
+        "SF": 0.0011,
+        "F": 0.0004,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "206681",
+      "full_name": "Fabian Marozsan",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0186,
+        "R16": 0.009,
+        "QF": 0.0025,
+        "SF": 0.0009,
+        "F": 0.0002,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210116",
+      "full_name": "Michael Zheng",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0046,
+        "R16": 0.0016,
+        "QF": 0.0001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208260",
+      "full_name": "Zachary Svajda",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0063,
+        "R16": 0.0016,
+        "QF": 0.0001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "127157",
+      "full_name": "Daniel Altmaier",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0037,
+        "R16": 0.0006,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "207678",
+      "full_name": "Juan Manuel Cerundolo",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.005,
+        "R16": 0.0016,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200267",
+      "full_name": "Zizou Bergs",
+      "seed": 31,
+      "probabilities": {
+        "R32": 0.0223,
+        "R16": 0.0054,
+        "QF": 0.0023,
+        "SF": 0.0005,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "126535",
+      "full_name": "Carlos Taberner",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0048,
+        "R16": 0.0004,
+        "QF": 0.0002,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "207411",
+      "full_name": "Jesper De Jong",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0158,
+        "R16": 0.0019,
+        "QF": 0.0007,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208859",
+      "full_name": "Francesco Passaro",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0071,
+        "R16": 0.0012,
+        "QF": 0.0005,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "123828",
+      "full_name": "Jan Choinski",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0004,
+        "R16": 0.0,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200462",
+      "full_name": "Andrea Guerrieri",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0026,
+        "R16": 0.0011,
+        "QF": 0.0005,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208014",
+      "full_name": "Rinky Hijikata",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0007,
+        "R16": 0.0001,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208882",
+      "full_name": "Roman Andres Burruchaga",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0023,
+        "R16": 0.0011,
+        "QF": 0.0007,
+        "SF": 0.0003,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "144684",
+      "full_name": "Alex Molcan",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0136,
+        "R16": 0.0034,
+        "QF": 0.0009,
+        "SF": 0.0002,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "126127",
+      "full_name": "Benjamin Bonzi",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0129,
+        "R16": 0.0029,
+        "QF": 0.0014,
+        "SF": 0.0002,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "106218",
+      "full_name": "Marcos Giron",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0203,
+        "R16": 0.0062,
+        "QF": 0.0025,
+        "SF": 0.0005,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209860",
+      "full_name": "Ignacio Buse",
+      "seed": 32,
+      "probabilities": {
+        "R32": 0.0032,
+        "R16": 0.0003,
+        "QF": 0.0002,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208278",
+      "full_name": "Shintaro Mochizuki",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0015,
+        "R16": 0.0003,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208659",
+      "full_name": "Giovanni Mpetshi Perricard",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0029,
+        "R16": 0.0008,
+        "QF": 0.0002,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209226",
+      "full_name": "Adolfo Daniel Vallejo",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0088,
+        "R16": 0.0042,
+        "QF": 0.001,
+        "SF": 0.0005,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "132686",
+      "full_name": "Nuno Borges",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0086,
+        "R16": 0.0033,
+        "QF": 0.0013,
+        "SF": 0.0003,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210464",
+      "full_name": "Darwin Blanch",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0013,
+        "R16": 0.0005,
+        "QF": 0.0001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208233",
+      "full_name": "Mattia Bellucci",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0031,
+        "R16": 0.0012,
+        "QF": 0.0004,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200436",
+      "full_name": "Zsombor Piros",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0007,
+        "R16": 0.0002,
+        "QF": 0.0001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200116",
+      "full_name": "Camilo Ugo Carabelli",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0012,
+        "R16": 0.0001,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "105526",
+      "full_name": "Jan Lennard Struff",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0162,
+        "R16": 0.0032,
+        "QF": 0.0015,
+        "SF": 0.0002,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209209",
+      "full_name": "Filip Misolic",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0012,
+        "R16": 0.0,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210696",
+      "full_name": "Alexander Blockx",
+      "seed": 28,
+      "probabilities": {
+        "R32": 0.021,
+        "R16": 0.0147,
+        "QF": 0.0038,
+        "SF": 0.0013,
+        "F": 0.0003,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "144642",
+      "full_name": "Tomas Barrios Vera",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0076,
+        "R16": 0.0035,
+        "QF": 0.0007,
+        "SF": 0.0002,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210234",
+      "full_name": "Juncheng Shang",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0197,
+        "R16": 0.014,
+        "QF": 0.0035,
+        "SF": 0.0009,
+        "F": 0.0002,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "105477",
+      "full_name": "Marco Trungelliti",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0017,
+        "R16": 0.0004,
+        "QF": 0.0001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210460",
+      "full_name": "Nishesh Basavareddy",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0139,
+        "R16": 0.0047,
+        "QF": 0.0008,
+        "SF": 0.0003,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209262",
+      "full_name": "Tristan Schoolkate",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0111,
+        "R16": 0.0038,
+        "QF": 0.0002,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "207681",
+      "full_name": "Francisco Comesana",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0138,
+        "R16": 0.0052,
+        "QF": 0.0007,
+        "SF": 0.0002,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "207925",
+      "full_name": "Flavio Cobolli",
+      "seed": 5,
+      "probabilities": {
+        "R32": 0.0112,
+        "R16": 0.0037,
+        "QF": 0.0006,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200384",
+      "full_name": "Hugo Gaston",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0005,
+        "R16": 0.0,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210478",
+      "full_name": "Sebastian Gorzny",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0031,
+        "R16": 0.0013,
+        "QF": 0.0004,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209920",
+      "full_name": "Raphael Collignon",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.004,
+        "R16": 0.0014,
+        "QF": 0.0007,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209279",
+      "full_name": "Terence Atmane",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0066,
+        "R16": 0.0014,
+        "QF": 0.001,
+        "SF": 0.0002,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200647",
+      "full_name": "Sho Shimabukuro",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0072,
+        "R16": 0.001,
+        "QF": 0.0002,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "126239",
+      "full_name": "Arthur Rinderknech",
+      "seed": 26,
+      "probabilities": {
+        "R32": 0.0064,
+        "R16": 0.0013,
+        "QF": 0.0006,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200473",
+      "full_name": "Valentin Vacherot",
+      "seed": 22,
+      "probabilities": {
+        "R32": 0.0247,
+        "R16": 0.0161,
+        "QF": 0.005,
+        "SF": 0.0015,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "206499",
+      "full_name": "Aleksandar Kovacevic",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.003,
+        "R16": 0.0011,
+        "QF": 0.0001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "111794",
+      "full_name": "Kamil Majchrzak",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0137,
+        "R16": 0.0085,
+        "QF": 0.0021,
+        "SF": 0.0004,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209098",
+      "full_name": "Hamad Medjedovic",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0086,
+        "R16": 0.0042,
+        "QF": 0.0009,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "126846",
+      "full_name": "Aleksandar Vukic",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0055,
+        "R16": 0.0013,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210536",
+      "full_name": "Rei Sakamoto",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0073,
+        "R16": 0.0015,
+        "QF": 0.0001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "102093",
+      "full_name": "Martin Damm",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0132,
+        "R16": 0.0049,
+        "QF": 0.001,
+        "SF": 0.0002,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "126207",
+      "full_name": "Frances Tiafoe",
+      "seed": 11,
+      "probabilities": {
+        "R32": 0.024,
+        "R16": 0.0124,
+        "QF": 0.0023,
+        "SF": 0.0003,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "206909",
+      "full_name": "Brandon Nakashima",
+      "seed": 16,
+      "probabilities": {
+        "R32": 0.0211,
+        "R16": 0.0077,
+        "QF": 0.0019,
+        "SF": 0.0009,
+        "F": 0.0002,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "202104",
+      "full_name": "Sebastian Baez",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0047,
+        "R16": 0.0007,
+        "QF": 0.0001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210506",
+      "full_name": "Alex Michelsen",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0238,
+        "R16": 0.0107,
+        "QF": 0.0021,
+        "SF": 0.0007,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210748",
+      "full_name": "Federico Cina",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0004,
+        "R16": 0.0001,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210017",
+      "full_name": "Daniel Merida Aguilar",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0037,
+        "R16": 0.0015,
+        "QF": 0.0003,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "105916",
+      "full_name": "Marton Fucsovics",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0126,
+        "R16": 0.0073,
+        "QF": 0.002,
+        "SF": 0.0008,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "105227",
+      "full_name": "Marin Cilic",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0082,
+        "R16": 0.0037,
+        "QF": 0.0012,
+        "SF": 0.0003,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "144869",
+      "full_name": "Tomas Martin Etcheverry",
+      "seed": 27,
+      "probabilities": {
+        "R32": 0.0221,
+        "R16": 0.004,
+        "QF": 0.0011,
+        "SF": 0.0004,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200240",
+      "full_name": "Vit Kopriva",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0035,
+        "R16": 0.0001,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "211776",
+      "full_name": "Martin Landaluce",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0191,
+        "R16": 0.0015,
+        "QF": 0.0005,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "207985",
+      "full_name": "Jacob Fearnley",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0053,
+        "R16": 0.0003,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "126610",
+      "full_name": "Matteo Berrettini",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0072,
+        "R16": 0.0046,
+        "QF": 0.0021,
+        "SF": 0.0011,
+        "F": 0.0002,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "104527",
+      "full_name": "Stan Wawrinka",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0007,
+        "R16": 0.0003,
+        "QF": 0.0003,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208363",
+      "full_name": "Mariano Navone",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0003,
+        "R16": 0.0003,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210097",
+      "full_name": "Ben Shelton",
+      "seed": 8,
+      "probabilities": {
+        "R32": 0.0233,
+        "R16": 0.014,
+        "QF": 0.0079,
+        "SF": 0.0008,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "134868",
+      "full_name": "Tallon Griekspoor",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0059,
+        "R16": 0.0024,
+        "QF": 0.0009,
+        "SF": 0.0002,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "106000",
+      "full_name": "Damir Dzumhur",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0011,
+        "R16": 0.0001,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "128034",
+      "full_name": "Hubert Hurkacz",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0197,
+        "R16": 0.01,
+        "QF": 0.0055,
+        "SF": 0.0004,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200175",
+      "full_name": "Miomir Kecmanovic",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.009,
+        "R16": 0.0041,
+        "QF": 0.0019,
+        "SF": 0.0001,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "133430",
+      "full_name": "Denis Shapovalov",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.021,
+        "R16": 0.0111,
+        "QF": 0.0065,
+        "SF": 0.0013,
+        "F": 0.0002,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209414",
+      "full_name": "Luca Van Assche",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0053,
+        "R16": 0.0015,
+        "QF": 0.0003,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "111815",
+      "full_name": "Cameron Norrie",
+      "seed": 29,
+      "probabilities": {
+        "R32": 0.0147,
+        "R16": 0.0068,
+        "QF": 0.0021,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208103",
+      "full_name": "Jiri Lehecka",
+      "seed": 18,
+      "probabilities": {
+        "R32": 0.0248,
+        "R16": 0.0131,
+        "QF": 0.0068,
+        "SF": 0.001,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "105807",
+      "full_name": "Pablo Carreno Busta",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0039,
+        "R16": 0.0012,
+        "QF": 0.0001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210389",
+      "full_name": "Toby Samuel",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0079,
+        "R16": 0.0028,
+        "QF": 0.0012,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "207830",
+      "full_name": "Tomas Machac",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0134,
+        "R16": 0.0056,
+        "QF": 0.0024,
+        "SF": 0.0003,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "213194",
+      "full_name": "Jack Kennedy",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0067,
+        "R16": 0.0026,
+        "QF": 0.001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "126774",
+      "full_name": "Stefanos Tsitsipas",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0114,
+        "R16": 0.0059,
+        "QF": 0.0034,
+        "SF": 0.0001,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "122330",
+      "full_name": "Alexander Bublik",
+      "seed": 15,
+      "probabilities": {
+        "R32": 0.0238,
+        "R16": 0.0074,
+        "QF": 0.0009,
+        "SF": 0.0003,
+        "F": 0.0001,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200670",
+      "full_name": "J J Wolf",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0029,
+        "R16": 0.0005,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "202058",
+      "full_name": "Thiago Agustin Tirante",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.015,
+        "R16": 0.0038,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "105173",
+      "full_name": "Adrian Mannarino",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0083,
+        "R16": 0.0013,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209976",
+      "full_name": "Dino Prizmic",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0032,
+        "R16": 0.001,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "207686",
+      "full_name": "Alexander Shevchenko",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0025,
+        "R16": 0.0005,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "209409",
+      "full_name": "Coleman Wong",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0032,
+        "R16": 0.0013,
+        "QF": 0.0,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "208286",
+      "full_name": "Matteo Arnaldi",
+      "seed": 30,
+      "probabilities": {
+        "R32": 0.0147,
+        "R16": 0.0006,
+        "QF": 0.0003,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "105902",
+      "full_name": "James Duckworth",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0043,
+        "R16": 0.0001,
+        "QF": 0.0001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200059",
+      "full_name": "Yibing Wu",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0164,
+        "R16": 0.0008,
+        "QF": 0.0002,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "200443",
+      "full_name": "Adam Walton",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0146,
+        "R16": 0.0005,
+        "QF": 0.0001,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "210262",
+      "full_name": "Jaime Faria",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0014,
+        "R16": 0.001,
+        "QF": 0.0002,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "202385",
+      "full_name": "Jenson Brooksby",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0007,
+        "R16": 0.0005,
+        "QF": 0.0001,
+        "SF": 0.0001,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    },
+    {
+      "player_id": "126128",
+      "full_name": "Roman Safiullin",
+      "seed": null,
+      "probabilities": {
+        "R32": 0.0012,
+        "R16": 0.0008,
+        "QF": 0.0003,
+        "SF": 0.0,
+        "F": 0.0,
+        "CAMPEON": 0.0
+      }
+    }
+  ],
+  "round_snapshots": [
+    {
+      "round_name": "R128",
+      "frozen": true,
+      "players": {
+        "100644": {
+          "R32": 0.782,
+          "R16": 0.632,
+          "QF": 0.514,
+          "SF": 0.36,
+          "F": 0.234,
+          "CAMPEON": 0.096
+        },
+        "132283": {
+          "R32": 0.074,
+          "R16": 0.032,
+          "QF": 0.014,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "111460": {
+          "R32": 0.072,
+          "R16": 0.032,
+          "QF": 0.008,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207680": {
+          "R32": 0.072,
+          "R16": 0.02,
+          "QF": 0.006,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "105777": {
+          "R32": 0.358,
+          "R16": 0.126,
+          "QF": 0.07,
+          "SF": 0.022,
+          "F": 0.014,
+          "CAMPEON": 0.004
+        },
+        "200615": {
+          "R32": 0.212,
+          "R16": 0.048,
+          "QF": 0.022,
+          "SF": 0.006,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "105870": {
+          "R32": 0.276,
+          "R16": 0.074,
+          "QF": 0.036,
+          "SF": 0.01,
+          "F": 0.004,
+          "CAMPEON": 0.0
+        },
+        "126214": {
+          "R32": 0.154,
+          "R16": 0.036,
+          "QF": 0.018,
+          "SF": 0.002,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "209260": {
+          "R32": 0.106,
+          "R16": 0.026,
+          "QF": 0.004,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207784": {
+          "R32": 0.368,
+          "R16": 0.112,
+          "QF": 0.028,
+          "SF": 0.006,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207494": {
+          "R32": 0.318,
+          "R16": 0.102,
+          "QF": 0.016,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "208316": {
+          "R32": 0.208,
+          "R16": 0.06,
+          "QF": 0.008,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "208013": {
+          "R32": 0.072,
+          "R16": 0.024,
+          "QF": 0.004,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "144895": {
+          "R32": 0.21,
+          "R16": 0.128,
+          "QF": 0.024,
+          "SF": 0.006,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "209259": {
+          "R32": 0.056,
+          "R16": 0.022,
+          "QF": 0.006,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207518": {
+          "R32": 0.662,
+          "R16": 0.526,
+          "QF": 0.222,
+          "SF": 0.114,
+          "F": 0.058,
+          "CAMPEON": 0.016
+        },
+        "212588": {
+          "R32": 0.128,
+          "R16": 0.046,
+          "QF": 0.004,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "106423": {
+          "R32": 0.408,
+          "R16": 0.206,
+          "QF": 0.06,
+          "SF": 0.022,
+          "F": 0.008,
+          "CAMPEON": 0.0
+        },
+        "206681": {
+          "R32": 0.372,
+          "R16": 0.18,
+          "QF": 0.05,
+          "SF": 0.018,
+          "F": 0.004,
+          "CAMPEON": 0.0
+        },
+        "210116": {
+          "R32": 0.092,
+          "R16": 0.032,
+          "QF": 0.002,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "208260": {
+          "R32": 0.126,
+          "R16": 0.032,
+          "QF": 0.002,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "127157": {
+          "R32": 0.074,
+          "R16": 0.012,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207678": {
+          "R32": 0.1,
+          "R16": 0.032,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "134770": {
+          "R32": 0.7,
+          "R16": 0.46,
+          "QF": 0.198,
+          "SF": 0.078,
+          "F": 0.044,
+          "CAMPEON": 0.004
+        },
+        "200267": {
+          "R32": 0.446,
+          "R16": 0.108,
+          "QF": 0.046,
+          "SF": 0.01,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "126535": {
+          "R32": 0.096,
+          "R16": 0.008,
+          "QF": 0.004,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207411": {
+          "R32": 0.316,
+          "R16": 0.038,
+          "QF": 0.014,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "208859": {
+          "R32": 0.142,
+          "R16": 0.024,
+          "QF": 0.01,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "123828": {
+          "R32": 0.008,
+          "R16": 0.0,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "122298": {
+          "R32": 0.216,
+          "R16": 0.142,
+          "QF": 0.07,
+          "SF": 0.022,
+          "F": 0.016,
+          "CAMPEON": 0.004
+        },
+        "200462": {
+          "R32": 0.052,
+          "R16": 0.022,
+          "QF": 0.01,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "200282": {
+          "R32": 0.724,
+          "R16": 0.658,
+          "QF": 0.53,
+          "SF": 0.312,
+          "F": 0.198,
+          "CAMPEON": 0.068
+        },
+        "200000": {
+          "R32": 0.66,
+          "R16": 0.526,
+          "QF": 0.372,
+          "SF": 0.242,
+          "F": 0.122,
+          "CAMPEON": 0.022
+        },
+        "208014": {
+          "R32": 0.014,
+          "R16": 0.002,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "208882": {
+          "R32": 0.046,
+          "R16": 0.022,
+          "QF": 0.014,
+          "SF": 0.006,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "111575": {
+          "R32": 0.28,
+          "R16": 0.194,
+          "QF": 0.102,
+          "SF": 0.048,
+          "F": 0.024,
+          "CAMPEON": 0.008
+        },
+        "144684": {
+          "R32": 0.272,
+          "R16": 0.068,
+          "QF": 0.018,
+          "SF": 0.004,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "126127": {
+          "R32": 0.258,
+          "R16": 0.058,
+          "QF": 0.028,
+          "SF": 0.004,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "106218": {
+          "R32": 0.406,
+          "R16": 0.124,
+          "QF": 0.05,
+          "SF": 0.01,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "209860": {
+          "R32": 0.064,
+          "R16": 0.006,
+          "QF": 0.004,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "210150": {
+          "R32": 0.448,
+          "R16": 0.272,
+          "QF": 0.09,
+          "SF": 0.046,
+          "F": 0.02,
+          "CAMPEON": 0.01
+        },
+        "208278": {
+          "R32": 0.03,
+          "R16": 0.006,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "200514": {
+          "R32": 0.464,
+          "R16": 0.248,
+          "QF": 0.134,
+          "SF": 0.074,
+          "F": 0.028,
+          "CAMPEON": 0.002
+        },
+        "208659": {
+          "R32": 0.058,
+          "R16": 0.016,
+          "QF": 0.004,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "209226": {
+          "R32": 0.176,
+          "R16": 0.084,
+          "QF": 0.02,
+          "SF": 0.01,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "104792": {
+          "R32": 0.278,
+          "R16": 0.11,
+          "QF": 0.044,
+          "SF": 0.016,
+          "F": 0.008,
+          "CAMPEON": 0.002
+        },
+        "132686": {
+          "R32": 0.172,
+          "R16": 0.066,
+          "QF": 0.026,
+          "SF": 0.006,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "210530": {
+          "R32": 0.374,
+          "R16": 0.198,
+          "QF": 0.094,
+          "SF": 0.036,
+          "F": 0.016,
+          "CAMPEON": 0.002
+        },
+        "126203": {
+          "R32": 0.898,
+          "R16": 0.662,
+          "QF": 0.576,
+          "SF": 0.358,
+          "F": 0.16,
+          "CAMPEON": 0.04
+        },
+        "210464": {
+          "R32": 0.026,
+          "R16": 0.01,
+          "QF": 0.002,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "208233": {
+          "R32": 0.062,
+          "R16": 0.024,
+          "QF": 0.008,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "200436": {
+          "R32": 0.014,
+          "R16": 0.004,
+          "QF": 0.002,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "200116": {
+          "R32": 0.024,
+          "R16": 0.002,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "105526": {
+          "R32": 0.324,
+          "R16": 0.064,
+          "QF": 0.03,
+          "SF": 0.004,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "209209": {
+          "R32": 0.024,
+          "R16": 0.0,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "202103": {
+          "R32": 0.628,
+          "R16": 0.234,
+          "QF": 0.174,
+          "SF": 0.074,
+          "F": 0.018,
+          "CAMPEON": 0.002
+        },
+        "210696": {
+          "R32": 0.42,
+          "R16": 0.294,
+          "QF": 0.076,
+          "SF": 0.026,
+          "F": 0.006,
+          "CAMPEON": 0.0
+        },
+        "144642": {
+          "R32": 0.152,
+          "R16": 0.07,
+          "QF": 0.014,
+          "SF": 0.004,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "210234": {
+          "R32": 0.394,
+          "R16": 0.28,
+          "QF": 0.07,
+          "SF": 0.018,
+          "F": 0.004,
+          "CAMPEON": 0.0
+        },
+        "105477": {
+          "R32": 0.034,
+          "R16": 0.008,
+          "QF": 0.002,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "210460": {
+          "R32": 0.278,
+          "R16": 0.094,
+          "QF": 0.016,
+          "SF": 0.006,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "209262": {
+          "R32": 0.222,
+          "R16": 0.076,
+          "QF": 0.004,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207681": {
+          "R32": 0.276,
+          "R16": 0.104,
+          "QF": 0.014,
+          "SF": 0.004,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207925": {
+          "R32": 0.224,
+          "R16": 0.074,
+          "QF": 0.012,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "106421": {
+          "R32": 0.848,
+          "R16": 0.68,
+          "QF": 0.592,
+          "SF": 0.332,
+          "F": 0.104,
+          "CAMPEON": 0.072
+        },
+        "200384": {
+          "R32": 0.01,
+          "R16": 0.0,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "210478": {
+          "R32": 0.062,
+          "R16": 0.026,
+          "QF": 0.008,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "209920": {
+          "R32": 0.08,
+          "R16": 0.028,
+          "QF": 0.014,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "144719": {
+          "R32": 0.596,
+          "R16": 0.192,
+          "QF": 0.12,
+          "SF": 0.03,
+          "F": 0.008,
+          "CAMPEON": 0.002
+        },
+        "209279": {
+          "R32": 0.132,
+          "R16": 0.028,
+          "QF": 0.02,
+          "SF": 0.004,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "200647": {
+          "R32": 0.144,
+          "R16": 0.02,
+          "QF": 0.004,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "126239": {
+          "R32": 0.128,
+          "R16": 0.026,
+          "QF": 0.012,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "200473": {
+          "R32": 0.494,
+          "R16": 0.322,
+          "QF": 0.1,
+          "SF": 0.03,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "206499": {
+          "R32": 0.06,
+          "R16": 0.022,
+          "QF": 0.002,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "111794": {
+          "R32": 0.274,
+          "R16": 0.17,
+          "QF": 0.042,
+          "SF": 0.008,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "209098": {
+          "R32": 0.172,
+          "R16": 0.084,
+          "QF": 0.018,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "126846": {
+          "R32": 0.11,
+          "R16": 0.026,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "210536": {
+          "R32": 0.146,
+          "R16": 0.03,
+          "QF": 0.002,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "102093": {
+          "R32": 0.264,
+          "R16": 0.098,
+          "QF": 0.02,
+          "SF": 0.004,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "126207": {
+          "R32": 0.48,
+          "R16": 0.248,
+          "QF": 0.046,
+          "SF": 0.006,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "206909": {
+          "R32": 0.422,
+          "R16": 0.154,
+          "QF": 0.038,
+          "SF": 0.018,
+          "F": 0.004,
+          "CAMPEON": 0.0
+        },
+        "202104": {
+          "R32": 0.094,
+          "R16": 0.014,
+          "QF": 0.002,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "210506": {
+          "R32": 0.476,
+          "R16": 0.214,
+          "QF": 0.042,
+          "SF": 0.014,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "210748": {
+          "R32": 0.008,
+          "R16": 0.002,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "210017": {
+          "R32": 0.074,
+          "R16": 0.03,
+          "QF": 0.006,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "105916": {
+          "R32": 0.252,
+          "R16": 0.146,
+          "QF": 0.04,
+          "SF": 0.016,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "105227": {
+          "R32": 0.164,
+          "R16": 0.074,
+          "QF": 0.024,
+          "SF": 0.006,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "126094": {
+          "R32": 0.51,
+          "R16": 0.366,
+          "QF": 0.136,
+          "SF": 0.07,
+          "F": 0.022,
+          "CAMPEON": 0.012
+        },
+        "144869": {
+          "R32": 0.442,
+          "R16": 0.08,
+          "QF": 0.022,
+          "SF": 0.008,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "200240": {
+          "R32": 0.07,
+          "R16": 0.002,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "211776": {
+          "R32": 0.382,
+          "R16": 0.03,
+          "QF": 0.01,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207985": {
+          "R32": 0.106,
+          "R16": 0.006,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "126610": {
+          "R32": 0.144,
+          "R16": 0.092,
+          "QF": 0.042,
+          "SF": 0.022,
+          "F": 0.004,
+          "CAMPEON": 0.0
+        },
+        "104527": {
+          "R32": 0.014,
+          "R16": 0.006,
+          "QF": 0.006,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "208363": {
+          "R32": 0.006,
+          "R16": 0.006,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "104925": {
+          "R32": 0.836,
+          "R16": 0.778,
+          "QF": 0.632,
+          "SF": 0.424,
+          "F": 0.158,
+          "CAMPEON": 0.104
+        },
+        "210097": {
+          "R32": 0.466,
+          "R16": 0.28,
+          "QF": 0.158,
+          "SF": 0.016,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "134868": {
+          "R32": 0.118,
+          "R16": 0.048,
+          "QF": 0.018,
+          "SF": 0.004,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "106000": {
+          "R32": 0.022,
+          "R16": 0.002,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "128034": {
+          "R32": 0.394,
+          "R16": 0.2,
+          "QF": 0.11,
+          "SF": 0.008,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "200175": {
+          "R32": 0.18,
+          "R16": 0.082,
+          "QF": 0.038,
+          "SF": 0.002,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "133430": {
+          "R32": 0.42,
+          "R16": 0.222,
+          "QF": 0.13,
+          "SF": 0.026,
+          "F": 0.004,
+          "CAMPEON": 0.0
+        },
+        "209414": {
+          "R32": 0.106,
+          "R16": 0.03,
+          "QF": 0.006,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "111815": {
+          "R32": 0.294,
+          "R16": 0.136,
+          "QF": 0.042,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "208103": {
+          "R32": 0.496,
+          "R16": 0.262,
+          "QF": 0.136,
+          "SF": 0.02,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "105807": {
+          "R32": 0.078,
+          "R16": 0.024,
+          "QF": 0.002,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "210389": {
+          "R32": 0.158,
+          "R16": 0.056,
+          "QF": 0.024,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207830": {
+          "R32": 0.268,
+          "R16": 0.112,
+          "QF": 0.048,
+          "SF": 0.006,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "144750": {
+          "R32": 0.244,
+          "R16": 0.108,
+          "QF": 0.048,
+          "SF": 0.004,
+          "F": 0.002,
+          "CAMPEON": 0.002
+        },
+        "213194": {
+          "R32": 0.134,
+          "R16": 0.052,
+          "QF": 0.02,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "126774": {
+          "R32": 0.228,
+          "R16": 0.118,
+          "QF": 0.068,
+          "SF": 0.002,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "209950": {
+          "R32": 0.394,
+          "R16": 0.268,
+          "QF": 0.152,
+          "SF": 0.03,
+          "F": 0.014,
+          "CAMPEON": 0.002
+        },
+        "122330": {
+          "R32": 0.476,
+          "R16": 0.148,
+          "QF": 0.018,
+          "SF": 0.006,
+          "F": 0.002,
+          "CAMPEON": 0.0
+        },
+        "200670": {
+          "R32": 0.058,
+          "R16": 0.01,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "202058": {
+          "R32": 0.3,
+          "R16": 0.076,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "105173": {
+          "R32": 0.166,
+          "R16": 0.026,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "209976": {
+          "R32": 0.064,
+          "R16": 0.02,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207686": {
+          "R32": 0.05,
+          "R16": 0.01,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "209409": {
+          "R32": 0.064,
+          "R16": 0.026,
+          "QF": 0.0,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "126205": {
+          "R32": 0.822,
+          "R16": 0.684,
+          "QF": 0.152,
+          "SF": 0.12,
+          "F": 0.056,
+          "CAMPEON": 0.03
+        },
+        "208286": {
+          "R32": 0.294,
+          "R16": 0.012,
+          "QF": 0.006,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "105902": {
+          "R32": 0.086,
+          "R16": 0.002,
+          "QF": 0.002,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "200059": {
+          "R32": 0.328,
+          "R16": 0.016,
+          "QF": 0.004,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "200443": {
+          "R32": 0.292,
+          "R16": 0.01,
+          "QF": 0.002,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "210262": {
+          "R32": 0.028,
+          "R16": 0.02,
+          "QF": 0.004,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "202385": {
+          "R32": 0.014,
+          "R16": 0.01,
+          "QF": 0.002,
+          "SF": 0.002,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "126128": {
+          "R32": 0.024,
+          "R16": 0.016,
+          "QF": 0.006,
+          "SF": 0.0,
+          "F": 0.0,
+          "CAMPEON": 0.0
+        },
+        "207989": {
+          "R32": 0.934,
+          "R16": 0.914,
+          "QF": 0.804,
+          "SF": 0.748,
+          "F": 0.6,
+          "CAMPEON": 0.496
+        }
+      }
+    }
+  ],
+  "bracket": [
+    {
+      "round": "R128",
+      "matches": [
+        {
+          "favorite_id": "100644",
+          "underdog_id": "132283",
+          "prob": 0.8803
+        },
+        {
+          "favorite_id": "207680",
+          "underdog_id": "111460",
+          "prob": 0.501
+        },
+        {
+          "favorite_id": "105777",
+          "underdog_id": "200615",
+          "prob": 0.5985
+        },
+        {
+          "favorite_id": "105870",
+          "underdog_id": "126214",
+          "prob": 0.5888
+        },
+        {
+          "favorite_id": "207784",
+          "underdog_id": "209260",
+          "prob": 0.7109
+        },
+        {
+          "favorite_id": "207494",
+          "underdog_id": "208316",
+          "prob": 0.5883
+        },
+        {
+          "favorite_id": "144895",
+          "underdog_id": "208013",
+          "prob": 0.6507
+        },
+        {
+          "favorite_id": "207518",
+          "underdog_id": "209259",
+          "prob": 0.8638
+        },
+        {
+          "favorite_id": "106423",
+          "underdog_id": "212588",
+          "prob": 0.6743
+        },
+        {
+          "favorite_id": "206681",
+          "underdog_id": "210116",
+          "prob": 0.726
+        },
+        {
+          "favorite_id": "208260",
+          "underdog_id": "127157",
+          "prob": 0.5596
+        },
+        {
+          "favorite_id": "134770",
+          "underdog_id": "207678",
+          "prob": 0.8034
+        },
+        {
+          "favorite_id": "200267",
+          "underdog_id": "126535",
+          "prob": 0.7081
+        },
+        {
+          "favorite_id": "207411",
+          "underdog_id": "208859",
+          "prob": 0.592
+        },
+        {
+          "favorite_id": "122298",
+          "underdog_id": "123828",
+          "prob": 0.806
+        },
+        {
+          "favorite_id": "200282",
+          "underdog_id": "200462",
+          "prob": 0.8843
+        },
+        {
+          "favorite_id": "200000",
+          "underdog_id": "208014",
+          "prob": 0.9427
+        },
+        {
+          "favorite_id": "111575",
+          "underdog_id": "208882",
+          "prob": 0.6977
+        },
+        {
+          "favorite_id": "144684",
+          "underdog_id": "126127",
+          "prob": 0.502
+        },
+        {
+          "favorite_id": "106218",
+          "underdog_id": "209860",
+          "prob": 0.7907
+        },
+        {
+          "favorite_id": "210150",
+          "underdog_id": "208278",
+          "prob": 0.8683
+        },
+        {
+          "favorite_id": "200514",
+          "underdog_id": "208659",
+          "prob": 0.8105
+        },
+        {
+          "favorite_id": "104792",
+          "underdog_id": "209226",
+          "prob": 0.5929
+        },
+        {
+          "favorite_id": "210530",
+          "underdog_id": "132686",
+          "prob": 0.6545
+        },
+        {
+          "favorite_id": "126203",
+          "underdog_id": "210464",
+          "prob": 0.9467
+        },
+        {
+          "favorite_id": "208233",
+          "underdog_id": "200436",
+          "prob": 0.6332
+        },
+        {
+          "favorite_id": "105526",
+          "underdog_id": "200116",
+          "prob": 0.8223
+        },
+        {
+          "favorite_id": "202103",
+          "underdog_id": "209209",
+          "prob": 0.9083
+        },
+        {
+          "favorite_id": "210696",
+          "underdog_id": "144642",
+          "prob": 0.6643
+        },
+        {
+          "favorite_id": "210234",
+          "underdog_id": "105477",
+          "prob": 0.7987
+        },
+        {
+          "favorite_id": "210460",
+          "underdog_id": "209262",
+          "prob": 0.5361
+        },
+        {
+          "favorite_id": "207681",
+          "underdog_id": "207925",
+          "prob": 0.5344
+        },
+        {
+          "favorite_id": "106421",
+          "underdog_id": "200384",
+          "prob": 0.975
+        },
+        {
+          "favorite_id": "209920",
+          "underdog_id": "210478",
+          "prob": 0.554
+        },
+        {
+          "favorite_id": "144719",
+          "underdog_id": "209279",
+          "prob": 0.7499
+        },
+        {
+          "favorite_id": "126239",
+          "underdog_id": "200647",
+          "prob": 0.5106
+        },
+        {
+          "favorite_id": "200473",
+          "underdog_id": "206499",
+          "prob": 0.791
+        },
+        {
+          "favorite_id": "111794",
+          "underdog_id": "209098",
+          "prob": 0.5635
+        },
+        {
+          "favorite_id": "210536",
+          "underdog_id": "126846",
+          "prob": 0.5702
+        },
+        {
+          "favorite_id": "126207",
+          "underdog_id": "102093",
+          "prob": 0.5693
+        },
+        {
+          "favorite_id": "206909",
+          "underdog_id": "202104",
+          "prob": 0.7578
+        },
+        {
+          "favorite_id": "210506",
+          "underdog_id": "210748",
+          "prob": 0.9002
+        },
+        {
+          "favorite_id": "105916",
+          "underdog_id": "210017",
+          "prob": 0.6474
+        },
+        {
+          "favorite_id": "126094",
+          "underdog_id": "105227",
+          "prob": 0.7072
+        },
+        {
+          "favorite_id": "144869",
+          "underdog_id": "200240",
+          "prob": 0.7431
+        },
+        {
+          "favorite_id": "211776",
+          "underdog_id": "207985",
+          "prob": 0.6989
+        },
+        {
+          "favorite_id": "126610",
+          "underdog_id": "104527",
+          "prob": 0.7322
+        },
+        {
+          "favorite_id": "104925",
+          "underdog_id": "208363",
+          "prob": 0.9733
+        },
+        {
+          "favorite_id": "210097",
+          "underdog_id": "134868",
+          "prob": 0.7324
+        },
+        {
+          "favorite_id": "128034",
+          "underdog_id": "106000",
+          "prob": 0.8501
+        },
+        {
+          "favorite_id": "133430",
+          "underdog_id": "200175",
+          "prob": 0.6438
+        },
+        {
+          "favorite_id": "111815",
+          "underdog_id": "209414",
+          "prob": 0.6502
+        },
+        {
+          "favorite_id": "208103",
+          "underdog_id": "105807",
+          "prob": 0.7347
+        },
+        {
+          "favorite_id": "207830",
+          "underdog_id": "210389",
+          "prob": 0.6011
+        },
+        {
+          "favorite_id": "144750",
+          "underdog_id": "213194",
+          "prob": 0.6267
+        },
+        {
+          "favorite_id": "209950",
+          "underdog_id": "126774",
+          "prob": 0.5829
+        },
+        {
+          "favorite_id": "122330",
+          "underdog_id": "200670",
+          "prob": 0.8413
+        },
+        {
+          "favorite_id": "202058",
+          "underdog_id": "105173",
+          "prob": 0.5567
+        },
+        {
+          "favorite_id": "209976",
+          "underdog_id": "207686",
+          "prob": 0.5542
+        },
+        {
+          "favorite_id": "126205",
+          "underdog_id": "209409",
+          "prob": 0.8817
+        },
+        {
+          "favorite_id": "208286",
+          "underdog_id": "105902",
+          "prob": 0.6459
+        },
+        {
+          "favorite_id": "200059",
+          "underdog_id": "200443",
+          "prob": 0.5321
+        },
+        {
+          "favorite_id": "210262",
+          "underdog_id": "202385",
+          "prob": 0.6461
+        },
+        {
+          "favorite_id": "207989",
+          "underdog_id": "126128",
+          "prob": 0.9683
+        }
+      ]
+    },
+    {
+      "round": "R64",
+      "matches": [
+        {
+          "favorite_id": "100644",
+          "underdog_id": "207680",
+          "prob": 0.9234
+        },
+        {
+          "favorite_id": "105777",
+          "underdog_id": "105870",
+          "prob": 0.5869
+        },
+        {
+          "favorite_id": "207784",
+          "underdog_id": "207494",
+          "prob": 0.5053
+        },
+        {
+          "favorite_id": "207518",
+          "underdog_id": "144895",
+          "prob": 0.7476
+        },
+        {
+          "favorite_id": "106423",
+          "underdog_id": "206681",
+          "prob": 0.5364
+        },
+        {
+          "favorite_id": "134770",
+          "underdog_id": "208260",
+          "prob": 0.8236
+        },
+        {
+          "favorite_id": "200267",
+          "underdog_id": "207411",
+          "prob": 0.5646
+        },
+        {
+          "favorite_id": "200282",
+          "underdog_id": "122298",
+          "prob": 0.8197
+        },
+        {
+          "favorite_id": "200000",
+          "underdog_id": "111575",
+          "prob": 0.6536
+        },
+        {
+          "favorite_id": "106218",
+          "underdog_id": "144684",
+          "prob": 0.5578
+        },
+        {
+          "favorite_id": "200514",
+          "underdog_id": "210150",
+          "prob": 0.5172
+        },
+        {
+          "favorite_id": "210530",
+          "underdog_id": "104792",
+          "prob": 0.5859
+        },
+        {
+          "favorite_id": "126203",
+          "underdog_id": "208233",
+          "prob": 0.9329
+        },
+        {
+          "favorite_id": "202103",
+          "underdog_id": "105526",
+          "prob": 0.7002
+        },
+        {
+          "favorite_id": "210696",
+          "underdog_id": "210234",
+          "prob": 0.5436
+        },
+        {
+          "favorite_id": "210460",
+          "underdog_id": "207681",
+          "prob": 0.5221
+        },
+        {
+          "favorite_id": "106421",
+          "underdog_id": "209920",
+          "prob": 0.8579
+        },
+        {
+          "favorite_id": "144719",
+          "underdog_id": "126239",
+          "prob": 0.7484
+        },
+        {
+          "favorite_id": "200473",
+          "underdog_id": "111794",
+          "prob": 0.6355
+        },
+        {
+          "favorite_id": "126207",
+          "underdog_id": "210536",
+          "prob": 0.7562
+        },
+        {
+          "favorite_id": "206909",
+          "underdog_id": "210506",
+          "prob": 0.5342
+        },
+        {
+          "favorite_id": "126094",
+          "underdog_id": "105916",
+          "prob": 0.6926
+        },
+        {
+          "favorite_id": "144869",
+          "underdog_id": "211776",
+          "prob": 0.5622
+        },
+        {
+          "favorite_id": "104925",
+          "underdog_id": "126610",
+          "prob": 0.8404
+        },
+        {
+          "favorite_id": "210097",
+          "underdog_id": "128034",
+          "prob": 0.5965
+        },
+        {
+          "favorite_id": "133430",
+          "underdog_id": "111815",
+          "prob": 0.6193
+        },
+        {
+          "favorite_id": "208103",
+          "underdog_id": "207830",
+          "prob": 0.5979
+        },
+        {
+          "favorite_id": "209950",
+          "underdog_id": "144750",
+          "prob": 0.5978
+        },
+        {
+          "favorite_id": "122330",
+          "underdog_id": "202058",
+          "prob": 0.6133
+        },
+        {
+          "favorite_id": "126205",
+          "underdog_id": "209976",
+          "prob": 0.925
+        },
+        {
+          "favorite_id": "200059",
+          "underdog_id": "208286",
+          "prob": 0.5337
+        },
+        {
+          "favorite_id": "207989",
+          "underdog_id": "210262",
+          "prob": 0.9693
+        }
+      ]
+    },
+    {
+      "round": "R32",
+      "matches": [
+        {
+          "favorite_id": "100644",
+          "underdog_id": "105777",
+          "prob": 0.8007
+        },
+        {
+          "favorite_id": "207518",
+          "underdog_id": "207784",
+          "prob": 0.7603
+        },
+        {
+          "favorite_id": "134770",
+          "underdog_id": "106423",
+          "prob": 0.5996
+        },
+        {
+          "favorite_id": "200282",
+          "underdog_id": "200267",
+          "prob": 0.8777
+        },
+        {
+          "favorite_id": "200000",
+          "underdog_id": "106218",
+          "prob": 0.7826
+        },
+        {
+          "favorite_id": "200514",
+          "underdog_id": "210530",
+          "prob": 0.519
+        },
+        {
+          "favorite_id": "126203",
+          "underdog_id": "202103",
+          "prob": 0.7182
+        },
+        {
+          "favorite_id": "210696",
+          "underdog_id": "210460",
+          "prob": 0.6484
+        },
+        {
+          "favorite_id": "106421",
+          "underdog_id": "144719",
+          "prob": 0.7422
+        },
+        {
+          "favorite_id": "200473",
+          "underdog_id": "126207",
+          "prob": 0.6233
+        },
+        {
+          "favorite_id": "126094",
+          "underdog_id": "206909",
+          "prob": 0.6535
+        },
+        {
+          "favorite_id": "104925",
+          "underdog_id": "144869",
+          "prob": 0.8976
+        },
+        {
+          "favorite_id": "210097",
+          "underdog_id": "133430",
+          "prob": 0.524
+        },
+        {
+          "favorite_id": "209950",
+          "underdog_id": "208103",
+          "prob": 0.5256
+        },
+        {
+          "favorite_id": "126205",
+          "underdog_id": "122330",
+          "prob": 0.7686
+        },
+        {
+          "favorite_id": "207989",
+          "underdog_id": "200059",
+          "prob": 0.9804
+        }
+      ]
+    },
+    {
+      "round": "R16",
+      "matches": [
+        {
+          "favorite_id": "100644",
+          "underdog_id": "207518",
+          "prob": 0.733
+        },
+        {
+          "favorite_id": "200282",
+          "underdog_id": "134770",
+          "prob": 0.7608
+        },
+        {
+          "favorite_id": "200000",
+          "underdog_id": "200514",
+          "prob": 0.662
+        },
+        {
+          "favorite_id": "126203",
+          "underdog_id": "210696",
+          "prob": 0.8027
+        },
+        {
+          "favorite_id": "106421",
+          "underdog_id": "200473",
+          "prob": 0.7598
+        },
+        {
+          "favorite_id": "104925",
+          "underdog_id": "126094",
+          "prob": 0.7375
+        },
+        {
+          "favorite_id": "210097",
+          "underdog_id": "209950",
+          "prob": 0.5027
+        },
+        {
+          "favorite_id": "207989",
+          "underdog_id": "126205",
+          "prob": 0.8368
+        }
+      ]
+    },
+    {
+      "round": "QF",
+      "matches": [
+        {
+          "favorite_id": "100644",
+          "underdog_id": "200282",
+          "prob": 0.5575
+        },
+        {
+          "favorite_id": "126203",
+          "underdog_id": "200000",
+          "prob": 0.5228
+        },
+        {
+          "favorite_id": "104925",
+          "underdog_id": "106421",
+          "prob": 0.6021
+        },
+        {
+          "favorite_id": "207989",
+          "underdog_id": "210097",
+          "prob": 0.9165
+        }
+      ]
+    },
+    {
+      "round": "SF",
+      "matches": [
+        {
+          "favorite_id": "100644",
+          "underdog_id": "126203",
+          "prob": 0.6258
+        },
+        {
+          "favorite_id": "207989",
+          "underdog_id": "104925",
+          "prob": 0.7097
+        }
+      ]
+    },
+    {
+      "round": "F",
+      "matches": [
+        {
+          "favorite_id": "207989",
+          "underdog_id": "100644",
+          "prob": 0.7478
+        }
+      ]
+    }
+  ]
+}
