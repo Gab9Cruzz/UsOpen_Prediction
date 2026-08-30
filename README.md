@@ -30,6 +30,7 @@ python simular_usopen.py --html    # genera una página y la abre sola
 | `python simular_usopen.py` | Corre la predicción y la muestra en la terminal |
 | `python simular_usopen.py --html` | Lo mismo, pero como página web (bracket + tabla), y la abre en el navegador |
 | `python simular_usopen.py --serve` | Levanta una página local con un botón "Simular de nuevo" (podés cambiar simulaciones/modelo sin reiniciar nada) |
+| `python simular_usopen.py --export-json docs/data/resultados_simulacion.json` | Exporta la predicción a JSON estático, para el dashboard de `docs/` (lo corre solo el workflow de GitHub Actions, ver arriba) |
 | `python simular_usopen.py --update-data` | Vuelve a descargar todo y reconstruye la base (usalo si pasaron días y querés los resultados más recientes) |
 | `python simular_usopen.py --draw-year 2024` | Simula otra edición ya jugada, en vez del sorteo actual |
 | `python simular_usopen.py --simulations 50000` | Más simulaciones = número más preciso, tarda un poco más |
@@ -71,12 +72,17 @@ R128", "entrando a R64", etc. — cada una es la foto de lo que el modelo pensab
 en ese momento del torneo, y deja de recalcularse en cuanto ya no puede
 cambiar (todo lo anterior a esa ronda ya se jugó en la realidad).
 
-**Automatización web (en camino):** hay un plan armado y revisado para que
-esto se actualice solo todos los días del torneo (GitHub Actions) y se
-publique en un dashboard público (GitHub Pages) sin tener que correr nada a
-mano — ver [PLAN_AUTOMATIZACION_WEB.md](PLAN_AUTOMATIZACION_WEB.md). Todavía
-no está implementado (es el plan, no el código); el paso a paso manual para
-cuando se implemente está en [MANUAL_STEPS.md](MANUAL_STEPS.md).
+**Dashboard público, actualizado solo:** además de correrlo a mano, este
+proyecto se publica solo todos los días del torneo -- `.github/workflows/
+actualizar_prediccion.yml` corre el pipeline de arriba y exporta
+`docs/data/resultados_simulacion.json` (`--export-json`, ver
+`src/cli/json_export.py`), que sirve `docs/index.html` (Tailwind + Chart.js,
+sin backend) por GitHub Pages: tabla completa, probabilidad de campeón,
+fluctuación por ronda y el cuadro proyectado con hover. Diseño completo en
+[PLAN_AUTOMATIZACION_WEB.md](PLAN_AUTOMATIZACION_WEB.md); los pasos manuales
+de GitHub (habilitar Pages, permisos del bot) están en
+[MANUAL_STEPS.md](MANUAL_STEPS.md) -- hace falta correrlos una vez para que
+el sitio quede publicado.
 
 ## Modelos disponibles (`--model`)
 
@@ -117,6 +123,7 @@ python simular_usopen.py --top 32                # más filas en la tabla de la 
 python simular_usopen.py -v                       # logging detallado
 python simular_usopen.py --backtest 2010-2025    # backtest de precisión (ver arriba)
 python simular_usopen.py --html --no-open        # genera la página sin abrir el navegador
+python simular_usopen.py --export-json ruta.json # exporta JSON estático (dashboard, ver arriba)
 python -m pytest tests/ -v                        # corre los tests
 ```
 
@@ -155,7 +162,8 @@ usarlo.
    estricto por edición, Brier/log-loss/ECE con intervalo de confianza,
    contra baselines (ranking ATP, moneda, Elo de superficie).
 6. **CLI** (`simular_usopen.py`): orquesta todo lo anterior e imprime la
-   tabla con Rich, o genera la página HTML.
+   tabla con Rich, genera la página HTML, o exporta el JSON estático
+   (`src/cli/json_export.py`) que consume `docs/app.js`.
 
 ### Modelo, en una frase
 
@@ -212,6 +220,8 @@ está verificado 32/32 contra los emparejamientos reales de R64 de 2025
 python -m pytest tests/ -v
 ```
 
-130+ tests: reconstrucción del cuadro, no-leakage, motor de simulación
+139+ tests: reconstrucción del cuadro, no-leakage, motor de simulación
 (incluido el condicionamiento por resultados reales), parsing del sorteo en
-vivo, snapshots por ronda, reporte HTML.
+vivo, snapshots por ronda, reporte HTML, exportador JSON. El frontend
+(`docs/app.js`) y el workflow de GitHub Actions se verifican con QA manual
+post-deploy (proyecto 100% Python/pytest, ver `TODOS.md`).

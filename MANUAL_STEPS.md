@@ -2,9 +2,10 @@
 
 Esto es lo que **vos** tenés que hacer a mano en GitHub (Claude Code no puede
 tocar la interfaz web de GitHub). Corresponde al plan en
-[PLAN_AUTOMATIZACION_WEB.md](PLAN_AUTOMATIZACION_WEB.md). Se hace **una vez**
-que el código del plan (workflow, exportador, dashboard) ya esté implementado y
-mergeado a `main` — no hay nada para hacer todavía si solo existe el plan.
+[PLAN_AUTOMATIZACION_WEB.md](PLAN_AUTOMATIZACION_WEB.md) -- el código (workflow,
+exportador, dashboard) ya está implementado en `main` (2026-08-30). Lo que
+sigue son los pasos de una sola vez para que el sitio quede publicado de
+verdad.
 
 ## 1. Habilitar GitHub Pages
 
@@ -66,16 +67,18 @@ este plan), así que ese valor se ajusta solo con la fecha del calendario.
      revisar `src/data/live_draw.py` (fuera del alcance de este documento,
      es un cambio de código).
 
-## 5. Primer commit manual (arranque en frío)
+## 5. Primer commit manual (arranque en frío) — YA HECHO
 
 Antes de que el cron corra por primera vez, el sitio no debe arrancar vacío
-(ver "HORA 6+" en el plan). Corré una vez a mano, en tu máquina:
+(ver "HORA 6+" en el plan). Esto ya se hizo como parte de la implementación:
+`docs/data/resultados_simulacion.json` fue generado con `--export-json` y
+está commiteado junto con el resto del código. De acá en más lo actualiza
+solo el workflow — no hace falta correr nada a mano, salvo que quieras
+refrescarlo vos mismo entre corridas del cron:
 
 ```bash
-python simular_usopen.py --update-data --export-json docs/data/resultados_simulacion.json
+python simular_usopen.py --update-data --draw-year "$(date +%Y)" --export-json docs/data/resultados_simulacion.json
 git add docs/data/resultados_simulacion.json
-git commit -m "feat(web): primer JSON exportado a mano (arranque en frío)"
+git commit -m "chore(data): actualizar predicción a mano"
 git push
 ```
-
-Esto es un paso único — de ahí en más lo hace solo el workflow.
