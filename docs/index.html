@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Predicción US Open</title>
+<meta name="description" content="Predicción del US Open actualizada automáticamente todos los días del torneo, con simulación Monte Carlo del cuadro completo.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+<style>
+  /* Paleta (dataviz skill, palette.md) -- modo oscuro seleccionado a
+     propósito ("dashboard de analítica deportiva", PLAN_AUTOMATIZACION_WEB.md
+     sección 3.3), no un fallback automático de prefers-color-scheme. */
+  :root {
+    --surface-0: #0d0d0d;       /* plano de página */
+    --surface-1: #1a1a19;       /* superficie de card/chart */
+    --surface-2: #222220;       /* superficie elevada (hover, header de tabla) */
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --grid: #2c2c2a;            /* gridline / hairline */
+    --baseline: #383835;
+    --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5;        /* blue -- serie principal (campeón, favorito) */
+    --series-2: #d95926;        /* orange */
+    --series-3: #199e70;        /* aqua */
+    --series-4: #c98500;        /* yellow */
+    --series-5: #d55181;        /* magenta */
+    --series-6: #4caf4c;        /* green (paso claro sobre fondo oscuro) */
+    --series-7: #9085e9;        /* violet */
+    --series-8: #e66767;        /* red */
+    --good: #0ca30c;
+    --ball-yellow: #ccff00;     /* acento de marca -- solo detalles puntuales */
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--surface-0); }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--text-primary);
+  }
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .muted { color: var(--text-muted); }
+  .secondary { color: var(--text-secondary); }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  thead th {
+    position: sticky; top: 0;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    text-align: right; padding: 10px 12px;
+    font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+  thead th:nth-child(-n+3) { text-align: left; }
+  tbody td { padding: 8px 12px; text-align: right; white-space: nowrap; border-top: 1px solid var(--grid); font-size: 0.86rem; }
+  tbody td:nth-child(-n+3) { text-align: left; }
+  tbody tr:hover { background: var(--surface-2); }
+  .rank { color: var(--text-muted); }
+  .player-name { font-weight: 600; }
+  .champ-pct { color: var(--series-1); font-weight: 700; }
+
+  /* Bracket -- mismo truco de alineación vertical que html_report.py:
+     todas las columnas comparten la altura de R128 (la más larga) y
+     "space-evenly" las hace converger visualmente hacia el campeón. */
+  .bracket { display: flex; gap: 14px; }
+  .bracket-round { display: flex; flex-direction: column; min-width: 176px; flex: none; }
+  .bracket-round-label {
+    text-align: center; font-weight: 700; font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--series-1); margin-bottom: 8px;
+  }
+  .bracket-round-matches { display: flex; flex-direction: column; justify-content: space-evenly; flex: 1; }
+  .bracket-match {
+    position: relative;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 9px; font-size: 0.78rem; line-height: 1.35;
+    background: var(--surface-1); cursor: default;
+    transition: border-color .12s, background .12s;
+  }
+  .bracket-match:hover { border-color: var(--series-1); background: var(--surface-2); }
+  .bracket-match .fav { font-weight: 700; color: var(--text-primary); }
+  .bracket-match .und { color: var(--text-muted); }
+  /* Interactividad pedida en el plan: el % NO está siempre visible -- solo
+     aparece en hover (a diferencia de html_report.py, que lo muestra fijo). */
+  .bracket-tooltip {
+    position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%);
+    background: #000; color: #fff; border: 1px solid var(--series-1);
+    border-radius: 6px; padding: 6px 10px; font-size: 0.74rem; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity .12s;
+    z-index: 10; box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+  }
+  .bracket-match:hover .bracket-tooltip { opacity: 1; }
+  .champion-card {
+    text-align: center; font-weight: 800; font-size: 1.05rem;
+    padding: 18px 12px; border-radius: 8px;
+    background: linear-gradient(180deg, #10254a, var(--surface-1));
+    border: 2px solid var(--ball-yellow); color: var(--text-primary);
+  }
+
+  .bar-row-track { background: rgba(57,135,229,0.12); border-radius: 4px; }
+  .bar-row-fill { background: var(--series-1); border-radius: 4px; }
+
+  #error-banner, #empty-banner { display: none; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<header class="border-b" style="border-color: var(--border); background: linear-gradient(180deg, #0f1b30, var(--surface-0));">
+  <div class="max-w-6xl mx-auto px-5 py-6">
+    <div class="flex flex-wrap items-baseline justify-between gap-3">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight" id="masthead-title">Predicción US Open</h1>
+        <p class="secondary text-sm mt-1" id="masthead-meta">Cargando…</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="live-badge" class="hidden text-xs font-semibold px-2 py-1 rounded-full" style="background: rgba(12,163,12,0.15); color: var(--good); border: 1px solid rgba(12,163,12,0.4);">● EN VIVO</span>
+        <span id="updated-badge" class="text-xs font-medium px-2 py-1 rounded-full secondary" style="background: var(--surface-1); border: 1px solid var(--border);"></span>
+      </div>
+    </div>
+    <p class="muted text-xs mt-3 max-w-3xl" id="masthead-note"></p>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-5 py-6 flex flex-col gap-6">
+
+  <div id="loading-banner" class="card px-5 py-8 text-center secondary">
+    Cargando la predicción más reciente…
+  </div>
+
+  <div id="error-banner" class="card px-5 py-8 text-center" style="border-color: var(--series-8);">
+    <p class="font-semibold" style="color: var(--series-8);">No se pudo cargar la predicción.</p>
+    <p class="secondary text-sm mt-1" id="error-detail">Probá recargar la página en un rato -- si el problema sigue, es un bug, no falta de datos.</p>
+  </div>
+
+  <div id="empty-banner" class="card px-5 py-8 text-center secondary">
+    Todavía no hay una edición en curso para mostrar. Volvé cuando arranque el sorteo del próximo US Open.
+  </div>
+
+  <div id="content" class="hidden flex-col gap-6" style="display:none;">
+
+    <!-- Favorito destacado -->
+    <section class="card px-6 py-5 flex items-center gap-5" id="hero-card">
+      <div class="text-4xl">🏆</div>
+      <div>
+        <div class="muted text-xs uppercase tracking-wide">Favorito del modelo</div>
+        <div class="text-2xl font-bold" id="hero-name">--</div>
+        <div class="secondary text-sm">Probabilidad de campeón: <span class="champ-pct" id="hero-pct">--</span></div>
+      </div>
+    </section>
+
+    <!-- Barras horizontales: probabilidad de campeón -->
+    <section class="card px-6 py-5">
+      <h2 class="text-base font-semibold mb-1">Probabilidad de campeón</h2>
+      <p class="muted text-xs mb-4">Top jugadores del cuadro, según <span id="chart-sims-label">--</span> simulaciones Monte Carlo.</p>
+      <div style="height: 420px;">
+        <canvas id="chart-champion"></canvas>
+      </div>
+    </section>
+
+    <!-- Línea: fluctuación por ronda -->
+    <section class="card px-6 py-5" id="fluctuation-section">
+      <h2 class="text-base font-semibold mb-1">Cómo fluctuó la probabilidad de campeón</h2>
+      <p class="muted text-xs mb-4">Una línea por jugador -- cada punto es la predicción "entrando a esa ronda", recalculada con los resultados reales ya jugados.</p>
+      <div style="height: 360px;">
+        <canvas id="chart-fluctuation"></canvas>
+      </div>
+    </section>
+    <div id="fluctuation-empty" class="card px-6 py-5 secondary text-sm hidden">
+      El torneo todavía no arrancó -- en cuanto haya resultados reales vas a ver acá cómo cambia la probabilidad ronda a ronda.
+    </div>
+
+    <!-- Bracket -->
+    <section class="card px-6 py-5">
+      <h2 class="text-base font-semibold mb-1">Cuadro proyectado</h2>
+      <p class="muted text-xs mb-4">Un solo camino de favoritos (probabilidad exacta del modelo, sin Monte Carlo) -- pasá el mouse sobre un cruce para ver el %.</p>
+      <div class="overflow-x-auto pb-2">
+        <div class="bracket" id="bracket-root"></div>
+      </div>
+    </section>
+
+    <!-- Tabla completa -->
+    <section class="card px-6 py-5">
+      <h2 class="text-base font-semibold mb-4">Cuadro completo</h2>
+      <div class="overflow-x-auto">
+        <table id="players-table">
+          <thead><tr id="players-table-head"></tr></thead>
+          <tbody id="players-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="max-w-6xl mx-auto px-5 py-8 muted text-xs">
+  <p>Generado automáticamente por <a class="underline" href="https://github.com/Gab9Cruzz/UsOpen_Prediction" style="color: var(--series-1);">UsOpen_Prediction</a> -- simulación Monte Carlo sobre datos reales de saque/resto (ver el repo para el modelo y el backtest de precisión). Este sitio no tiene backend: es un JSON estático regenerado por GitHub Actions durante el torneo.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
