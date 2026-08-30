@@ -89,6 +89,7 @@ el sitio quede publicado.
 ```bash
 python simular_usopen.py --model serve_return   # default: saque/resto simulado juego a juego
 python simular_usopen.py --model elo             # Elo de superficie decide cada partido de una
+python simular_usopen.py --model ensemble        # blend 70% serve_return + 30% Elo (ver abajo)
 ```
 
 `serve_return` (el de por defecto) simula el partido de verdad — juegos, sets,
@@ -96,7 +97,11 @@ tie-breaks, con las reglas reales del US Open. `elo` es más simple: usa el
 ranking Elo del jugador para decidir el partido completo con una sola
 "moneda", sin simular puntos. Mide un poquito mejor en el backtest (Brier
 0.190 vs 0.193) pero pierde matices — con el cuadro 2025, por ejemplo, aplana
-las probabilidades de los favoritos top.
+las probabilidades de los favoritos top. `ensemble` blendea las probabilidades
+de ambos (70% serve_return + 30% Elo, el peso medido en
+`src/validation/ensemble_search.py` y confirmado sobre el holdout 2024-2025)
+con una sola moneda por partido, igual que `elo` — es el modelo que salió
+mejor en el backtest de los tres.
 
 ## Cómo se mide la precisión (no se afirma)
 
@@ -118,6 +123,7 @@ python simular_usopen.py --update-data           # re-descarga y reconstruye la 
 python simular_usopen.py --simulations 50000     # más iteraciones (motor rápido: ~500-600 sims/s)
 python simular_usopen.py --exact-simulation      # motor juego a juego original, más lento, para depurar
 python simular_usopen.py --model elo             # decide cada partido directamente con Elo (ver arriba)
+python simular_usopen.py --model ensemble        # blend 70% serve_return + 30% Elo (ver arriba)
 python simular_usopen.py --draw-year 2024        # otra edición ya jugada
 python simular_usopen.py --top 32                # más filas en la tabla de la terminal
 python simular_usopen.py -v                       # logging detallado
@@ -195,11 +201,6 @@ está verificado 32/32 contra los emparejamientos reales de R64 de 2025
 
 ### Limitaciones conocidas (por diseño, o pendientes)
 
-- **El ensamble Elo + saque/resto está medido pero no desplegado.** El
-  backtest (`src/validation/ensemble_search.py`) confirmó una mejora real
-  combinando 70% modelo de saque/resto + 30% Elo, pero conectar ese peso
-  específico a la simulación en vivo requiere resolver un choque de
-  arquitectura pendiente.
 - **Head-to-head y fatiga se probaron y se descartaron**, con evidencia: no
   agregan nada que el modelo de saque/resto y Elo no capturen ya.
 - **El motor "exacto" (`--exact-simulation`) solo funciona con cuadros de
@@ -211,8 +212,9 @@ está verificado 32/32 contra los emparejamientos reales de R64 de 2025
 - La ingesta del sorteo en vivo depende de que Wikipedia mantenga el formato
   de plantilla esperado — si cambia, la ingesta falla con un error explícito
   en vez de simular algo incompleto en silencio.
-- El `entry_type` (Q/WC/LL/PR) del sorteo en vivo se guarda pero todavía no
-  se muestra en la tabla/HTML (ver `TODOS.md`).
+- El `entry_type` (Q/WC/LL/PR) del sorteo en vivo se guarda (`cuadro_torneo`,
+  Fase 4) pero todavía no se muestra en la tabla/HTML junto al seed --
+  cosmético, bajo costo si se pide.
 
 ### Tests
 
@@ -224,4 +226,5 @@ python -m pytest tests/ -v
 (incluido el condicionamiento por resultados reales), parsing del sorteo en
 vivo, snapshots por ronda, reporte HTML, exportador JSON. El frontend
 (`docs/app.js`) y el workflow de GitHub Actions se verifican con QA manual
-post-deploy (proyecto 100% Python/pytest, ver `TODOS.md`).
+post-deploy -- el proyecto es 100% Python/pytest hoy, no hay test runner de
+JS (Playwright/Vitest) todavía.

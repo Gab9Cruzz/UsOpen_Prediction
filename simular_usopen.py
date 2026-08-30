@@ -38,18 +38,21 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Simula cada partido juego a juego (motor original) en vez de la réplica analítica "
             "rápida (B10, Fase D: mismo modelo, un solo sorteo por partido en vez de ~100-200). "
-            "Más lento; solo para verificar/depurar. No aplica con --model elo (esa siempre decide "
-            "el partido completo con una sola moneda, por diseño)."
+            "Más lento; solo para verificar/depurar. No aplica con --model elo/ensemble (esas dos siempre "
+            "deciden el partido completo con una sola moneda, por diseño)."
         ),
     )
     parser.add_argument(
-        "--model", choices=["serve_return", "elo"], default="serve_return",
+        "--model", choices=["serve_return", "elo", "ensemble"], default="serve_return",
         help=(
             "serve_return (default): Barnett-Clarke + ajuste por oponente, simulado juego/set/partido "
             "(medido: Brier 0.193 sobre 2010-2025, PLAN_MEJORA_SIMULACION.md). "
             "elo: usa el ranking Elo de superficie directamente para decidir cada partido completo "
             "(una sola moneda por partido, sin juegos/sets/tie-break) -- medido: Brier 0.190, "
-            "el baseline más fuerte del backtest, pero sin la estructura juego/set del modelo por defecto."
+            "el baseline más fuerte del backtest, pero sin la estructura juego/set del modelo por defecto. "
+            "ensemble: blend 70%% serve_return + 30%% Elo (peso medido en src/validation/ensemble_search.py, "
+            "confirmado sobre el holdout 2024-2025) -- una sola moneda por partido, como elo, pero con la "
+            "probabilidad ya blendeada."
         ),
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="Logging detallado.")

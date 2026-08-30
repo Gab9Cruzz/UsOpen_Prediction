@@ -25,7 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from src.cli.formatting import DISPLAY_ROUNDS
-from src.cli.pipeline import build_predicted_bracket
+from src.cli.pipeline import build_predicted_bracket, compute_round_accuracy
 
 
 def _probabilities(round_counts: dict[str, int], n_simulations: int) -> dict[str, float]:
@@ -91,6 +91,14 @@ def _bracket_payload(players_by_id: dict[str, object], model: str, known_results
     ]
 
 
+def _round_accuracy_payload(players_by_id: dict[str, object], model: str, known_results) -> list[dict]:
+    """Aciertos del modelo por ronda ya jugada -- ver el docstring de
+    `compute_round_accuracy` para el criterio exacto (condicionado solo en
+    resultados PREVIOS a la ronda, nunca la trampa de comparar contra el
+    ganador real ya inyectado como favorito)."""
+    return compute_round_accuracy(players_by_id, model, known_results or {})
+
+
 def build_export(
     counts: dict[str, dict[str, int]],
     players_by_id: dict[str, object],
@@ -115,6 +123,7 @@ def build_export(
         "players": _players_payload(counts, players_by_id, n_simulations),
         "round_snapshots": _round_snapshots_payload(meta.get("round_snapshots") or []),
         "bracket": _bracket_payload(players_by_id, model, meta.get("known_results")),
+        "round_accuracy": _round_accuracy_payload(players_by_id, model, meta.get("known_results")),
     }
 
 

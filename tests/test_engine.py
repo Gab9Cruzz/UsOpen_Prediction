@@ -7,8 +7,9 @@ jugadores (2**7). Un cuadro de otro tamaño potencia de 2 (16, 32, 64...)
 revienta con IndexError a mitad de camino -- confirmado por
 `test_non_128_power_of_two_crashes` abajo. Es una limitación real del motor
 (no estaba en el diagnóstico original del plan de mejora), pero no bloquea la
-Fase A porque el cuadro del US Open siempre es de 128; queda anotada para
-`TODOS.md`. Por eso el resto de los tests usa cuadros sintéticos de 128."""
+Fase A porque el cuadro del US Open siempre es de 128; queda anotada como
+limitación conocida (ver README, "Limitaciones conocidas"). Por eso el resto
+de los tests usa cuadros sintéticos de 128."""
 
 from __future__ import annotations
 

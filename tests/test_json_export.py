@@ -43,7 +43,7 @@ def test_export_structure_has_expected_top_level_keys():
     players = _players(("p1", "Fuerte", 1), ("p2", "Débil", None))
     counts = _make_counts(100, {"p1": {"CAMPEON": 90}, "p2": {"CAMPEON": 10}})
     payload = json_export.build_export(counts, players, _base_meta(), n_simulations=100)
-    assert set(payload.keys()) == {"meta", "players", "round_snapshots", "bracket"}
+    assert set(payload.keys()) == {"meta", "players", "round_snapshots", "bracket", "round_accuracy"}
     assert payload["meta"]["tournament_name"] == "Us Open"
     assert payload["meta"]["n_simulations"] == 100
     assert payload["meta"]["generated_at"].endswith("Z")
@@ -138,3 +138,29 @@ def test_known_results_with_tuple_keys_does_not_break_export():
     json.dumps(payload)  # no debe lanzar TypeError
     # El bracket refleja el ganador real, no el favorito del modelo.
     assert payload["bracket"][0]["matches"][0]["favorite_id"] == "p2"
+
+
+def test_round_accuracy_round_without_results_has_zero_total():
+    # Sin resultados reales todavía (torneo no arrancó, o ronda futura):
+    # total=0, no 0% -- el frontend distingue "sin datos" de "acertó 0".
+    players = _players(("p1", "Favorito", 1), ("p2", "Sorpresa", None))
+    counts = _make_counts(100, {"p1": {"CAMPEON": 90}, "p2": {"CAMPEON": 10}})
+    payload = json_export.build_export(counts, players, _base_meta(), n_simulations=100)
+    accuracy = {r["round_name"]: r for r in payload["round_accuracy"]}
+    assert accuracy["F"] == {"round_name": "F", "correct": 0, "total": 0}
+
+
+def test_round_accuracy_scores_against_prior_round_prediction_not_actual_winner():
+    # El modelo favorece a p1 (mejor serve/return) -- si p2 ganó la final de
+    # verdad, eso es un FALLO del modelo, no debe salir 1/1 acierto (esa
+    # sería la trampa de comparar contra el favorito ya "sabido").
+    players = {
+        "p1": Player(player_id="p1", full_name="Favorito", seed=1, serve_pct=0.70, return_pct=0.40),
+        "p2": Player(player_id="p2", full_name="Sorpresa", seed=None, serve_pct=0.40, return_pct=0.20),
+    }
+    counts = _make_counts(100, {"p1": {"CAMPEON": 90}, "p2": {"CAMPEON": 10}})
+    known_results = {("F", 1): "p2"}
+    meta = _base_meta(is_live=True, known_results=known_results)
+    payload = json_export.build_export(counts, players, meta, n_simulations=100)
+    accuracy = {r["round_name"]: r for r in payload["round_accuracy"]}
+    assert accuracy["F"] == {"round_name": "F", "correct": 0, "total": 1}

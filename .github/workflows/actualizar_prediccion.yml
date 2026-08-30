@@ -33,7 +33,7 @@ jobs:
   actualizar:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Chequear ventana del torneo (defensa secundaria, red de seguridad)
         id: window
@@ -51,7 +51,7 @@ jobs:
             echo "Fuera de la ventana del torneo ($START a $END UTC) -- no-op limpio, sin correr el pipeline."
           fi
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         if: steps.window.outputs.in_window == 'true'
         with:
           python-version: "3.11"

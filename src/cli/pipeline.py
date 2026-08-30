@@ -12,13 +12,15 @@ import sqlite3
 from src import config
 from src.data import fetchers, ingest, live_draw, repository
 from src.simulation import monte_carlo
+from src.simulation.models import ensemble as ensemble_model
 from src.simulation.models import elo as elo_model
 from src.simulation.models import serve_return
 
 
-def _load_elo_draw(draw: list, tournament_name: str, draw_year: int) -> list[elo_model.EloPlayer]:
-    """Construye el cuadro en formato `EloPlayer` (player_id/full_name/seed
-    de `draw`, más su rating Elo de superficie) para `--model elo`.
+def _compute_elo_ratings(tournament_name: str, draw_year: int) -> dict[str, float]:
+    """Ratings Elo de superficie de cada jugador del draw, en la fecha de
+    corte de la edición -- compartido por `--model elo` y `--model ensemble`
+    (ninguno de los dos vuelve a pagar la descarga/recorrido del historial).
 
     El Elo no vive en `metricas_superficie` (se recalcula del historial
     crudo, como en el backtest): hace falta más años de los que carga
@@ -37,11 +39,31 @@ def _load_elo_draw(draw: list, tournament_name: str, draw_year: int) -> list[elo
     # vivo (sin R128 histórico todavía) cae a "hoy" en vez de reventar, igual
     # que `ingest.run_ingest` para el resto de las métricas.
     cutoff = ingest.resolve_cutoff(tournament_name, draw_year, all_matches)
-    ratings = elo_model.build_elo_snapshots(all_matches, config.SURFACE, [cutoff])[cutoff]
+    return elo_model.build_elo_snapshots(all_matches, config.SURFACE, [cutoff])[cutoff]
 
+
+def _load_elo_draw(draw: list, tournament_name: str, draw_year: int) -> list[elo_model.EloPlayer]:
+    """Construye el cuadro en formato `EloPlayer` (player_id/full_name/seed
+    de `draw`, más su rating Elo de superficie) para `--model elo`."""
+    ratings = _compute_elo_ratings(tournament_name, draw_year)
     return [
         elo_model.EloPlayer(
             player_id=p.player_id, full_name=p.full_name, seed=p.seed,
+            rating=ratings.get(p.player_id, elo_model.INITIAL_ELO),
+        )
+        for p in draw
+    ]
+
+
+def _load_ensemble_draw(draw: list, tournament_name: str, draw_year: int) -> list[ensemble_model.EnsemblePlayer]:
+    """Construye el cuadro en formato `EnsemblePlayer` (los mismos campos de
+    saque/resto de `draw`, más el rating Elo) para `--model ensemble` -- ver
+    el docstring de `src/simulation/models/ensemble.py` para el peso 70/30."""
+    ratings = _compute_elo_ratings(tournament_name, draw_year)
+    return [
+        ensemble_model.EnsemblePlayer(
+            player_id=p.player_id, full_name=p.full_name, seed=p.seed,
+            serve_pct=p.serve_pct, return_pct=p.return_pct, avg_serve_pct=p.avg_serve_pct,
             rating=ratings.get(p.player_id, elo_model.INITIAL_ELO),
         )
         for p in draw
@@ -61,13 +83,19 @@ def _run_engine(
     todos los snapshots de una edición en vivo -- solo cambia
     `known_results` entre una y otra, ver `_generate_round_snapshots`).
 
-    `match_prob_cache`: solo lo usa `serve_return` -- compartirlo ENTRE
-    llamadas (una por ronda-snapshot) evita recalcular `match_probability`
-    para los mismos pares una y otra vez (medido: sin esto, generar los 7
-    snapshots tardaba visiblemente más que una corrida normal -- ver el
-    docstring de `serve_return.run_simulations_fast`)."""
+    `match_prob_cache`: lo usan `serve_return` y `ensemble` (no `elo` --
+    `match_probability_from_elo` es una fórmula cerrada, no vale la pena
+    cachearla) -- compartirlo ENTRE llamadas (una por ronda-snapshot) evita
+    recalcular `match_probability` para los mismos pares una y otra vez
+    (medido: sin esto, generar los 7 snapshots tardaba visiblemente más que
+    una corrida normal -- ver el docstring de `serve_return.run_simulations_fast`
+    y, para `ensemble`, el de `ensemble.simulate_match`)."""
     if model == "elo":
         return elo_model.run_simulations_elo(sim_draw, n_simulations=simulations, seed=seed, known_results=known_results)
+    if model == "ensemble":
+        return ensemble_model.run_simulations(
+            sim_draw, n_simulations=simulations, seed=seed, known_results=known_results, cache=match_prob_cache,
+        )
     if exact_simulation:
         return monte_carlo.run_simulations(sim_draw, n_simulations=simulations, seed=seed, known_results=known_results)
     return serve_return.run_simulations_fast(
@@ -178,6 +206,9 @@ def run_prediction(
     if model == "elo":
         sim_draw = _load_elo_draw(draw, config.TOURNAMENT_NAME, draw_year)
         players_by_id = {p.player_id: p for p in sim_draw}
+    elif model == "ensemble":
+        sim_draw = _load_ensemble_draw(draw, config.TOURNAMENT_NAME, draw_year)
+        players_by_id = {p.player_id: p for p in sim_draw}
     else:
         sim_draw = draw
 
@@ -205,6 +236,12 @@ def run_prediction(
         note += (
             " Modelo: Elo de superficie decide cada partido directamente (una sola moneda, "
             "sin juegos/sets) -- ver --help."
+        )
+    elif model == "ensemble":
+        note += (
+            f" Modelo: ensamble {ensemble_model.SERVE_RETURN_WEIGHT:.0%} saque/resto + "
+            f"{1 - ensemble_model.SERVE_RETURN_WEIGHT:.0%} Elo de superficie (peso medido y confirmado "
+            "en el backtest, ver --help)."
         )
 
     meta = {
@@ -236,6 +273,8 @@ def _win_probability_fn(model: str):
     cada partido en la simulación real."""
     if model == "elo":
         return lambda a, b: elo_model.match_probability_from_elo(a.rating, b.rating)
+    if model == "ensemble":
+        return lambda a, b: ensemble_model.match_probability(a, b)
     return lambda a, b: serve_return.match_probability(a, b)
 
 
@@ -301,3 +340,48 @@ def build_predicted_bracket(
         current = winners
 
     return rounds, current[0]
+
+
+def compute_round_accuracy(
+    players_by_id: dict[str, object], model: str, known_results: monte_carlo.KnownResults
+) -> list[dict]:
+    """Aciertos del modelo por ronda ya jugada (pedido del usuario: "¿se
+    puede ver un indicador de cuantos aciertos tuvo el modelo por ronda?").
+
+    Para cada ronda con al menos un resultado real conocido, reconstruye el
+    cuadro predicho "entrando a esa ronda" -- condicionado SOLO en los
+    resultados reales de rondas ANTERIORES, mismo criterio que
+    `_generate_round_snapshots` -- y compara el favorito de cada cruce contra
+    quién ganó de verdad. Comparar contra `build_predicted_bracket(...,
+    known_results=known_results)` (el cuadro que ya muestra la web) sería
+    trampa: para un partido ya jugado esa función devuelve el ganador REAL
+    como "favorito" (prob=1.0), así que siempre acertaría 100%.
+
+    Ronda sin ningún resultado real todavía: `total=0` (el frontend debe
+    mostrarla como "--", no como 0% -- 0% sugeriría que el modelo falló
+    todo, cuando en realidad no hay nada que medir aún). Ronda con
+    resultados parciales (partido en curso): `total` cuenta solo los
+    partidos ya decididos, no los `MATCHES_PER_ROUND[ronda]` completos."""
+    results: list[dict] = []
+    for round_name in MATCH_ROUNDS:
+        decided = sum(1 for (r, _m) in known_results if r == round_name)
+        if decided == 0:
+            results.append({"round_name": round_name, "correct": 0, "total": 0})
+            continue
+
+        prior_rounds = MATCH_ROUNDS[: MATCH_ROUNDS.index(round_name)]
+        filtered_known = {(r, m): pid for (r, m), pid in known_results.items() if r in prior_rounds}
+        rounds, _champion = build_predicted_bracket(players_by_id, model, known_results=filtered_known)
+        round_matches = next(matches for matches in rounds if matches and matches[0]["round"] == round_name)
+
+        correct = 0
+        total = 0
+        for i, m in enumerate(round_matches, start=1):
+            actual_id = known_results.get((round_name, i))
+            if actual_id is None:
+                continue
+            total += 1
+            if m["favorite"].player_id == actual_id:
+                correct += 1
+        results.append({"round_name": round_name, "correct": correct, "total": total})
+    return results

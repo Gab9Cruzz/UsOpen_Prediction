@@ -104,6 +104,18 @@
   .bar-row-track { background: rgba(57,135,229,0.12); border-radius: 4px; }
   .bar-row-fill { background: var(--series-1); border-radius: 4px; }
 
+  /* Tabla de aciertos por ronda -- override puntual del default "primeras 3
+     columnas alineadas a la izquierda" (pensado para #players-table, donde
+     esas 3 son texto): acá solo "Ronda" es texto, el resto son números. */
+  #accuracy-table thead th:nth-child(-n+3) { text-align: right; }
+  #accuracy-table thead th:first-child { text-align: left; }
+  #accuracy-table tbody td:nth-child(-n+3) { text-align: right; }
+  #accuracy-table tbody td:first-child { text-align: left; }
+  .accuracy-bar-cell { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  .accuracy-bar-track { width: 80px; height: 6px; }
+  .accuracy-bar-fill { height: 6px; }
+  .accuracy-na { color: var(--text-muted); }
+
   #error-banner, #empty-banner { display: none; }
 </style>
 </head>
@@ -171,6 +183,21 @@
     </section>
     <div id="fluctuation-empty" class="card px-6 py-5 secondary text-sm hidden">
       El torneo todavía no arrancó -- en cuanto haya resultados reales vas a ver acá cómo cambia la probabilidad ronda a ronda.
+    </div>
+
+    <!-- Aciertos del modelo por ronda -->
+    <section class="card px-6 py-5" id="accuracy-section">
+      <h2 class="text-base font-semibold mb-1">Aciertos del modelo por ronda</h2>
+      <p class="muted text-xs mb-4">Favorito del modelo entrando a cada ronda (con los resultados reales de las rondas previas ya aplicados) comparado contra lo que pasó de verdad.</p>
+      <div class="overflow-x-auto">
+        <table id="accuracy-table">
+          <thead><tr><th>Ronda</th><th>Aciertos</th><th>Fallos</th><th>% acierto</th></tr></thead>
+          <tbody id="accuracy-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+    <div id="accuracy-empty" class="card px-6 py-5 secondary text-sm hidden">
+      Todavía no hay resultados reales para medir aciertos -- en cuanto se jueguen partidos vas a ver acá cómo le fue al modelo ronda a ronda.
     </div>
 
     <!-- Bracket -->

@@ -10,6 +10,7 @@ const ROUND_LABELS = { R128: "R128", R64: "R64", R32: "R32", R16: "R16", QF: "QF
 const MODEL_LABELS = {
   serve_return: "Saque/Resto (juego a juego)",
   elo: "Elo de superficie",
+  ensemble: "Ensamble (70% Saque/Resto + 30% Elo)",
 };
 const TOP_N_BAR_CHART = 12;
 const TOP_N_FLUCTUATION = 6;
@@ -85,13 +86,14 @@ async function loadData() {
 }
 
 function render(payload) {
-  const { meta, players, round_snapshots: roundSnapshots, bracket } = payload;
+  const { meta, players, round_snapshots: roundSnapshots, bracket, round_accuracy: roundAccuracy } = payload;
   const playersById = Object.fromEntries(players.map((p) => [p.player_id, p]));
 
   renderMasthead(meta);
   renderHero(players[0]);
   renderChampionChart(players, meta);
   renderFluctuationChart(roundSnapshots, playersById);
+  renderAccuracyTable(roundAccuracy);
   renderBracket(bracket, playersById);
   renderTable(players, meta);
 }
@@ -259,6 +261,74 @@ function renderFluctuationChart(roundSnapshots, playersById) {
       },
     },
   });
+}
+
+function renderAccuracyTable(roundAccuracy) {
+  const section = document.getElementById("accuracy-section");
+  const empty = document.getElementById("accuracy-empty");
+  // `round_accuracy` puede faltar en un JSON viejo cacheado (schema previo a
+  // este campo) -- tratarlo igual que "sin datos todavía", no reventar.
+  const hasAnyData = Array.isArray(roundAccuracy) && roundAccuracy.some((r) => r.total > 0);
+
+  if (!hasAnyData) {
+    section.classList.add("hidden");
+    empty.classList.remove("hidden");
+    return;
+  }
+  section.classList.remove("hidden");
+  empty.classList.add("hidden");
+
+  const body = document.getElementById("accuracy-table-body");
+  body.textContent = "";
+  for (const r of roundAccuracy) {
+    const tr = document.createElement("tr");
+
+    const roundTd = document.createElement("td");
+    roundTd.className = "player-name";
+    roundTd.textContent = ROUND_LABELS[r.round_name] || r.round_name;
+    tr.appendChild(roundTd);
+
+    if (r.total === 0) {
+      // Ronda todavía no jugada -- "--", nunca "0%" (0% leería como "el
+      // modelo falló todo", cuando en realidad no hay nada que medir aún).
+      for (let i = 0; i < 3; i++) {
+        const td = document.createElement("td");
+        td.className = "accuracy-na";
+        td.textContent = "--";
+        tr.appendChild(td);
+      }
+      body.appendChild(tr);
+      continue;
+    }
+
+    const incorrect = r.total - r.correct;
+    const pct = r.correct / r.total;
+
+    const correctTd = document.createElement("td");
+    correctTd.textContent = String(r.correct);
+    tr.appendChild(correctTd);
+
+    const incorrectTd = document.createElement("td");
+    incorrectTd.textContent = String(incorrect);
+    tr.appendChild(incorrectTd);
+
+    const pctTd = document.createElement("td");
+    const cell = document.createElement("div");
+    cell.className = "accuracy-bar-cell";
+    const label = document.createElement("span");
+    label.textContent = fmtPct(pct);
+    const barTrack = document.createElement("div");
+    barTrack.className = "accuracy-bar-track bar-row-track";
+    const barFill = document.createElement("div");
+    barFill.className = "accuracy-bar-fill bar-row-fill";
+    barFill.style.width = `${(pct * 100).toFixed(1)}%`;
+    barTrack.appendChild(barFill);
+    cell.append(label, barTrack);
+    pctTd.appendChild(cell);
+    tr.appendChild(pctTd);
+
+    body.appendChild(tr);
+  }
 }
 
 const _BRACKET_ROW_PX = 50;

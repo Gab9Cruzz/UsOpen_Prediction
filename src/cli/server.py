@@ -19,7 +19,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from src.cli import html_report
 from src.cli.pipeline import run_prediction
 
-VALID_MODELS = ("serve_return", "elo")
+VALID_MODELS = ("serve_return", "elo", "ensemble")
 
 # Constante plana, sin interpolación (mismo criterio que PAGE_STYLE en
 # html_report.py, decisión #27): evita el problema de tener que escapar
@@ -85,6 +85,7 @@ _SIM_LOCK = threading.Lock()
 def _controls_form(simulations: int, model: str, draw_year: int) -> str:
     serve_sel = " selected" if model == "serve_return" else ""
     elo_sel = " selected" if model == "elo" else ""
+    ensemble_sel = " selected" if model == "ensemble" else ""
     return (
         '<div class="controls"><form id="sim-form">'
         '<label>Simulaciones<input type="number" name="simulations" min="100" step="100" '
@@ -92,6 +93,7 @@ def _controls_form(simulations: int, model: str, draw_year: int) -> str:
         '<label>Modelo<select name="model">'
         f'<option value="serve_return"{serve_sel}>serve_return</option>'
         f'<option value="elo"{elo_sel}>elo</option>'
+        f'<option value="ensemble"{ensemble_sel}>ensemble</option>'
         "</select></label>"
         '<label>Año del cuadro<input type="number" name="draw_year" '
         f'value="{int(draw_year)}"></label>'
