@@ -10,7 +10,7 @@ import argparse
 import logging
 
 from src import config
-from src.cli import html_report, render
+from src.cli import html_report, json_export, render
 from src.cli.pipeline import run_prediction
 from src.validation import backtest
 
@@ -89,6 +89,14 @@ def parse_args() -> argparse.Namespace:
             "--backtest."
         ),
     )
+    parser.add_argument(
+        "--export-json", metavar="PATH", default=None,
+        help=(
+            "Exporta la predicción a un JSON estático en PATH (counts normalizados a probabilidad + "
+            "bracket proyectado + snapshots por ronda), pensado para que un frontend separado lo lea "
+            "con fetch() sin backend (ver PLAN_AUTOMATIZACION_WEB.md). No aplica con --backtest."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -158,6 +166,12 @@ def main() -> None:
             counts, players_by_id, n_simulations=args.simulations, meta=meta, auto_open=not args.no_open,
         )
         print(f"Reporte HTML: {path}")
+
+    if args.export_json:
+        path = json_export.export_json(
+            counts, players_by_id, meta=meta, n_simulations=args.simulations, path=args.export_json,
+        )
+        print(f"JSON exportado: {path}")
 
 
 if __name__ == "__main__":
