@@ -2,7 +2,7 @@
   "meta": {
     "tournament_name": "Us Open",
     "tournament_year": 2026,
-    "generated_at": "2026-08-31T00:06:18Z",
+    "generated_at": "2026-08-31T00:29:16Z",
     "model": "serve_return",
     "n_simulations": 10000,
     "is_live": true,
@@ -8894,322 +8894,389 @@
         {
           "favorite_id": "100644",
           "underdog_id": "132283",
-          "prob": 0.8802
+          "prob": 0.8802,
+          "status": "pending"
         },
         {
           "favorite_id": "207680",
           "underdog_id": "111460",
-          "prob": 0.501
+          "prob": 0.501,
+          "status": "pending"
         },
         {
           "favorite_id": "105777",
           "underdog_id": "200615",
-          "prob": 0.5985
+          "prob": 0.5985,
+          "status": "pending"
         },
         {
           "favorite_id": "105870",
           "underdog_id": "126214",
-          "prob": 0.5888
+          "prob": 0.5888,
+          "status": "pending"
         },
         {
           "favorite_id": "207784",
           "underdog_id": "209260",
-          "prob": 0.7082
+          "prob": 0.7082,
+          "status": "pending"
         },
         {
           "favorite_id": "207494",
           "underdog_id": "208316",
-          "prob": 0.5883
+          "prob": 0.5883,
+          "status": "pending"
         },
         {
           "favorite_id": "144895",
           "underdog_id": "208013",
-          "prob": 0.6505
+          "prob": 0.6505,
+          "status": "pending"
         },
         {
           "favorite_id": "207518",
           "underdog_id": "209259",
-          "prob": 0.8636
+          "prob": 0.8636,
+          "status": "pending"
         },
         {
           "favorite_id": "106423",
           "underdog_id": "212588",
-          "prob": 0.6742
+          "prob": 0.6742,
+          "status": "pending"
         },
         {
           "favorite_id": "206681",
           "underdog_id": "210116",
-          "prob": 0.7256
+          "prob": 0.7256,
+          "status": "pending"
         },
         {
           "favorite_id": "208260",
           "underdog_id": "127157",
-          "prob": 0.5596
+          "prob": 0.5596,
+          "status": "pending"
         },
         {
           "favorite_id": "210338",
           "underdog_id": "207678",
-          "prob": 0.6877
+          "prob": 0.6877,
+          "status": "pending"
         },
         {
           "favorite_id": "200267",
           "underdog_id": "126535",
-          "prob": 0.7077
+          "prob": 0.7077,
+          "status": "pending"
         },
         {
           "favorite_id": "207411",
           "underdog_id": "208859",
-          "prob": 0.592
+          "prob": 0.592,
+          "status": "pending"
         },
         {
           "favorite_id": "122298",
           "underdog_id": "123828",
-          "prob": 0.8057
+          "prob": 0.8057,
+          "status": "pending"
         },
         {
           "favorite_id": "200282",
           "underdog_id": "200462",
-          "prob": 0.8857
+          "prob": 0.8857,
+          "status": "pending"
         },
         {
           "favorite_id": "200000",
           "underdog_id": "208014",
-          "prob": 0.9426
+          "prob": 0.9426,
+          "status": "pending"
         },
         {
           "favorite_id": "111575",
           "underdog_id": "208882",
-          "prob": 0.7003
+          "prob": 0.7003,
+          "status": "pending"
         },
         {
           "favorite_id": "126127",
           "underdog_id": "144684",
-          "prob": 0.501
+          "prob": 0.501,
+          "status": "pending"
         },
         {
           "favorite_id": "106218",
           "underdog_id": "209860",
-          "prob": 0.7905
+          "prob": 0.7905,
+          "status": "pending"
         },
         {
           "favorite_id": "210150",
           "underdog_id": "208278",
-          "prob": 0.8681
+          "prob": 0.8681,
+          "status": "pending"
         },
         {
           "favorite_id": "200514",
           "underdog_id": "208659",
-          "prob": 0.8105
+          "prob": 0.8105,
+          "status": "pending"
         },
         {
           "favorite_id": "104792",
           "underdog_id": "209226",
-          "prob": 0.5959
+          "prob": 0.5959,
+          "status": "pending"
         },
         {
           "favorite_id": "210530",
           "underdog_id": "132686",
-          "prob": 0.6545
+          "prob": 0.6545,
+          "status": "pending"
         },
         {
           "favorite_id": "126203",
           "underdog_id": "210464",
-          "prob": 0.9465
+          "prob": 0.9465,
+          "status": "pending"
         },
         {
           "favorite_id": "208233",
           "underdog_id": "200436",
-          "prob": 0.633
+          "prob": 0.633,
+          "status": "pending"
         },
         {
           "favorite_id": "105526",
           "underdog_id": "200116",
-          "prob": 0.8221
+          "prob": 0.8221,
+          "status": "pending"
         },
         {
           "favorite_id": "202103",
           "underdog_id": "209209",
-          "prob": 0.9081
+          "prob": 0.9081,
+          "status": "pending"
         },
         {
           "favorite_id": "210696",
           "underdog_id": "144642",
-          "prob": 0.6641
+          "prob": 0.6641,
+          "status": "pending"
         },
         {
           "favorite_id": "210234",
           "underdog_id": "105477",
-          "prob": 0.7963
+          "prob": 0.7963,
+          "status": "pending"
         },
         {
           "favorite_id": "210460",
           "underdog_id": "209262",
-          "prob": 0.5361
+          "prob": 0.5361,
+          "status": "pending"
         },
         {
           "favorite_id": "207681",
           "underdog_id": "207925",
-          "prob": 0.5344
+          "prob": 0.5344,
+          "status": "pending"
         },
         {
           "favorite_id": "106421",
           "underdog_id": "200384",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "209920",
           "underdog_id": "210478",
-          "prob": 0.557
+          "prob": 0.557,
+          "status": "pending"
         },
         {
           "favorite_id": "144719",
           "underdog_id": "209279",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "126239",
           "underdog_id": "200647",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "200473",
           "underdog_id": "206499",
-          "prob": 0.7908
+          "prob": 0.7908,
+          "status": "pending"
         },
         {
           "favorite_id": "111794",
           "underdog_id": "209098",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "210536",
           "underdog_id": "126846",
-          "prob": 0.5703
+          "prob": 0.5703,
+          "status": "pending"
         },
         {
           "favorite_id": "126207",
           "underdog_id": "102093",
-          "prob": 0.5692
+          "prob": 0.5692,
+          "status": "pending"
         },
         {
           "favorite_id": "206909",
           "underdog_id": "202104",
-          "prob": 0.7576
+          "prob": 0.7576,
+          "status": "pending"
         },
         {
           "favorite_id": "210506",
           "underdog_id": "210748",
-          "prob": 0.8999
+          "prob": 0.8999,
+          "status": "pending"
         },
         {
           "favorite_id": "210017",
           "underdog_id": "105916",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "miss",
+          "predicted_id": "105916"
         },
         {
           "favorite_id": "126094",
           "underdog_id": "202261",
-          "prob": 0.8626
+          "prob": 0.8626,
+          "status": "pending"
         },
         {
           "favorite_id": "144869",
           "underdog_id": "200240",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "211776",
           "underdog_id": "207985",
-          "prob": 0.696
+          "prob": 0.696,
+          "status": "pending"
         },
         {
           "favorite_id": "126610",
           "underdog_id": "104527",
-          "prob": 0.732
+          "prob": 0.732,
+          "status": "pending"
         },
         {
           "favorite_id": "104925",
           "underdog_id": "208363",
-          "prob": 0.9733
+          "prob": 0.9733,
+          "status": "pending"
         },
         {
           "favorite_id": "210097",
           "underdog_id": "134868",
-          "prob": 0.7323
+          "prob": 0.7323,
+          "status": "pending"
         },
         {
           "favorite_id": "128034",
           "underdog_id": "106000",
-          "prob": 0.8499
+          "prob": 0.8499,
+          "status": "pending"
         },
         {
           "favorite_id": "133430",
           "underdog_id": "200175",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "209414",
           "underdog_id": "111815",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "miss",
+          "predicted_id": "111815"
         },
         {
           "favorite_id": "208103",
           "underdog_id": "105807",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "210389",
           "underdog_id": "207830",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "miss",
+          "predicted_id": "207830"
         },
         {
           "favorite_id": "144750",
           "underdog_id": "213194",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "209950",
           "underdog_id": "126774",
-          "prob": 0.5829
+          "prob": 0.5829,
+          "status": "pending"
         },
         {
           "favorite_id": "122330",
           "underdog_id": "200670",
-          "prob": 0.841
+          "prob": 0.841,
+          "status": "pending"
         },
         {
           "favorite_id": "202058",
           "underdog_id": "105173",
-          "prob": 0.5566
+          "prob": 0.5566,
+          "status": "pending"
         },
         {
           "favorite_id": "209976",
           "underdog_id": "207686",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "126205",
           "underdog_id": "209409",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "208286",
           "underdog_id": "105902",
-          "prob": 0.6458
+          "prob": 0.6458,
+          "status": "pending"
         },
         {
           "favorite_id": "200059",
           "underdog_id": "200443",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "210262",
           "underdog_id": "202385",
-          "prob": 1.0
+          "prob": 1.0,
+          "status": "hit"
         },
         {
           "favorite_id": "207989",
           "underdog_id": "126128",
-          "prob": 0.9682
+          "prob": 0.9682,
+          "status": "pending"
         }
       ]
     },
@@ -9219,162 +9286,194 @@
         {
           "favorite_id": "100644",
           "underdog_id": "207680",
-          "prob": 0.9233
+          "prob": 0.9233,
+          "status": "pending"
         },
         {
           "favorite_id": "105777",
           "underdog_id": "105870",
-          "prob": 0.5868
+          "prob": 0.5868,
+          "status": "pending"
         },
         {
           "favorite_id": "207784",
           "underdog_id": "207494",
-          "prob": 0.5021
+          "prob": 0.5021,
+          "status": "pending"
         },
         {
           "favorite_id": "207518",
           "underdog_id": "144895",
-          "prob": 0.7474
+          "prob": 0.7474,
+          "status": "pending"
         },
         {
           "favorite_id": "106423",
           "underdog_id": "206681",
-          "prob": 0.5363
+          "prob": 0.5363,
+          "status": "pending"
         },
         {
           "favorite_id": "210338",
           "underdog_id": "208260",
-          "prob": 0.7138
+          "prob": 0.7138,
+          "status": "pending"
         },
         {
           "favorite_id": "200267",
           "underdog_id": "207411",
-          "prob": 0.5645
+          "prob": 0.5645,
+          "status": "pending"
         },
         {
           "favorite_id": "200282",
           "underdog_id": "122298",
-          "prob": 0.8196
+          "prob": 0.8196,
+          "status": "pending"
         },
         {
           "favorite_id": "200000",
           "underdog_id": "111575",
-          "prob": 0.6536
+          "prob": 0.6536,
+          "status": "pending"
         },
         {
           "favorite_id": "106218",
           "underdog_id": "126127",
-          "prob": 0.5601
+          "prob": 0.5601,
+          "status": "pending"
         },
         {
           "favorite_id": "200514",
           "underdog_id": "210150",
-          "prob": 0.5174
+          "prob": 0.5174,
+          "status": "pending"
         },
         {
           "favorite_id": "210530",
           "underdog_id": "104792",
-          "prob": 0.5859
+          "prob": 0.5859,
+          "status": "pending"
         },
         {
           "favorite_id": "126203",
           "underdog_id": "208233",
-          "prob": 0.9328
+          "prob": 0.9328,
+          "status": "pending"
         },
         {
           "favorite_id": "202103",
           "underdog_id": "105526",
-          "prob": 0.7001
+          "prob": 0.7001,
+          "status": "pending"
         },
         {
           "favorite_id": "210696",
           "underdog_id": "210234",
-          "prob": 0.5466
+          "prob": 0.5466,
+          "status": "pending"
         },
         {
           "favorite_id": "210460",
           "underdog_id": "207681",
-          "prob": 0.5221
+          "prob": 0.5221,
+          "status": "pending"
         },
         {
           "favorite_id": "106421",
           "underdog_id": "209920",
-          "prob": 0.8578
+          "prob": 0.8578,
+          "status": "pending"
         },
         {
           "favorite_id": "144719",
           "underdog_id": "126239",
-          "prob": 0.7483
+          "prob": 0.7483,
+          "status": "pending"
         },
         {
           "favorite_id": "200473",
           "underdog_id": "111794",
-          "prob": 0.6354
+          "prob": 0.6354,
+          "status": "pending"
         },
         {
           "favorite_id": "126207",
           "underdog_id": "210536",
-          "prob": 0.756
+          "prob": 0.756,
+          "status": "pending"
         },
         {
           "favorite_id": "206909",
           "underdog_id": "210506",
-          "prob": 0.5341
+          "prob": 0.5341,
+          "status": "pending"
         },
         {
           "favorite_id": "126094",
           "underdog_id": "210017",
-          "prob": 0.8044
+          "prob": 0.8044,
+          "status": "pending"
         },
         {
           "favorite_id": "144869",
           "underdog_id": "211776",
-          "prob": 0.5652
+          "prob": 0.5652,
+          "status": "pending"
         },
         {
           "favorite_id": "104925",
           "underdog_id": "126610",
-          "prob": 0.8403
+          "prob": 0.8403,
+          "status": "pending"
         },
         {
           "favorite_id": "210097",
           "underdog_id": "128034",
-          "prob": 0.5965
+          "prob": 0.5965,
+          "status": "pending"
         },
         {
           "favorite_id": "133430",
           "underdog_id": "209414",
-          "prob": 0.7568
+          "prob": 0.7568,
+          "status": "pending"
         },
         {
           "favorite_id": "208103",
           "underdog_id": "210389",
-          "prob": 0.6937
+          "prob": 0.6937,
+          "status": "pending"
         },
         {
           "favorite_id": "209950",
           "underdog_id": "144750",
-          "prob": 0.5978
+          "prob": 0.5978,
+          "status": "pending"
         },
         {
           "favorite_id": "122330",
           "underdog_id": "202058",
-          "prob": 0.6133
+          "prob": 0.6133,
+          "status": "pending"
         },
         {
           "favorite_id": "126205",
           "underdog_id": "209976",
-          "prob": 0.9249
+          "prob": 0.9249,
+          "status": "pending"
         },
         {
           "favorite_id": "200059",
           "underdog_id": "208286",
-          "prob": 0.5337
+          "prob": 0.5337,
+          "status": "pending"
         },
         {
           "favorite_id": "207989",
           "underdog_id": "210262",
-          "prob": 0.9692
+          "prob": 0.9692,
+          "status": "pending"
         }
       ]
     },
@@ -9384,82 +9483,98 @@
         {
           "favorite_id": "100644",
           "underdog_id": "105777",
-          "prob": 0.8006
+          "prob": 0.8006,
+          "status": "pending"
         },
         {
           "favorite_id": "207518",
           "underdog_id": "207784",
-          "prob": 0.7627
+          "prob": 0.7627,
+          "status": "pending"
         },
         {
           "favorite_id": "106423",
           "underdog_id": "210338",
-          "prob": 0.5482
+          "prob": 0.5482,
+          "status": "pending"
         },
         {
           "favorite_id": "200282",
           "underdog_id": "200267",
-          "prob": 0.8775
+          "prob": 0.8775,
+          "status": "pending"
         },
         {
           "favorite_id": "200000",
           "underdog_id": "106218",
-          "prob": 0.7825
+          "prob": 0.7825,
+          "status": "pending"
         },
         {
           "favorite_id": "200514",
           "underdog_id": "210530",
-          "prob": 0.5192
+          "prob": 0.5192,
+          "status": "pending"
         },
         {
           "favorite_id": "126203",
           "underdog_id": "202103",
-          "prob": 0.7181
+          "prob": 0.7181,
+          "status": "pending"
         },
         {
           "favorite_id": "210696",
           "underdog_id": "210460",
-          "prob": 0.6482
+          "prob": 0.6482,
+          "status": "pending"
         },
         {
           "favorite_id": "106421",
           "underdog_id": "144719",
-          "prob": 0.7421
+          "prob": 0.7421,
+          "status": "pending"
         },
         {
           "favorite_id": "200473",
           "underdog_id": "126207",
-          "prob": 0.6232
+          "prob": 0.6232,
+          "status": "pending"
         },
         {
           "favorite_id": "126094",
           "underdog_id": "206909",
-          "prob": 0.6534
+          "prob": 0.6534,
+          "status": "pending"
         },
         {
           "favorite_id": "104925",
           "underdog_id": "144869",
-          "prob": 0.8974
+          "prob": 0.8974,
+          "status": "pending"
         },
         {
           "favorite_id": "210097",
           "underdog_id": "133430",
-          "prob": 0.524
+          "prob": 0.524,
+          "status": "pending"
         },
         {
           "favorite_id": "209950",
           "underdog_id": "208103",
-          "prob": 0.5256
+          "prob": 0.5256,
+          "status": "pending"
         },
         {
           "favorite_id": "126205",
           "underdog_id": "122330",
-          "prob": 0.7684
+          "prob": 0.7684,
+          "status": "pending"
         },
         {
           "favorite_id": "207989",
           "underdog_id": "200059",
-          "prob": 0.9804
+          "prob": 0.9804,
+          "status": "pending"
         }
       ]
     },
@@ -9469,42 +9584,50 @@
         {
           "favorite_id": "100644",
           "underdog_id": "207518",
-          "prob": 0.7329
+          "prob": 0.7329,
+          "status": "pending"
         },
         {
           "favorite_id": "200282",
           "underdog_id": "106423",
-          "prob": 0.8341
+          "prob": 0.8341,
+          "status": "pending"
         },
         {
           "favorite_id": "200000",
           "underdog_id": "200514",
-          "prob": 0.6617
+          "prob": 0.6617,
+          "status": "pending"
         },
         {
           "favorite_id": "126203",
           "underdog_id": "210696",
-          "prob": 0.8026
+          "prob": 0.8026,
+          "status": "pending"
         },
         {
           "favorite_id": "106421",
           "underdog_id": "200473",
-          "prob": 0.7597
+          "prob": 0.7597,
+          "status": "pending"
         },
         {
           "favorite_id": "104925",
           "underdog_id": "126094",
-          "prob": 0.7374
+          "prob": 0.7374,
+          "status": "pending"
         },
         {
           "favorite_id": "210097",
           "underdog_id": "209950",
-          "prob": 0.5027
+          "prob": 0.5027,
+          "status": "pending"
         },
         {
           "favorite_id": "207989",
           "underdog_id": "126205",
-          "prob": 0.8367
+          "prob": 0.8367,
+          "status": "pending"
         }
       ]
     },
@@ -9514,22 +9637,26 @@
         {
           "favorite_id": "100644",
           "underdog_id": "200282",
-          "prob": 0.5575
+          "prob": 0.5575,
+          "status": "pending"
         },
         {
           "favorite_id": "126203",
           "underdog_id": "200000",
-          "prob": 0.5227
+          "prob": 0.5227,
+          "status": "pending"
         },
         {
           "favorite_id": "104925",
           "underdog_id": "106421",
-          "prob": 0.602
+          "prob": 0.602,
+          "status": "pending"
         },
         {
           "favorite_id": "207989",
           "underdog_id": "210097",
-          "prob": 0.9163
+          "prob": 0.9163,
+          "status": "pending"
         }
       ]
     },
@@ -9539,12 +9666,14 @@
         {
           "favorite_id": "100644",
           "underdog_id": "126203",
-          "prob": 0.6257
+          "prob": 0.6257,
+          "status": "pending"
         },
         {
           "favorite_id": "207989",
           "underdog_id": "104925",
-          "prob": 0.7097
+          "prob": 0.7097,
+          "status": "pending"
         }
       ]
     },
@@ -9554,7 +9683,8 @@
         {
           "favorite_id": "207989",
           "underdog_id": "100644",
-          "prob": 0.7477
+          "prob": 0.7477,
+          "status": "pending"
         }
       ]
     }
