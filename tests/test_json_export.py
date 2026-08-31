@@ -150,6 +150,66 @@ def test_round_accuracy_round_without_results_has_zero_total():
     assert accuracy["F"] == {"round_name": "F", "correct": 0, "total": 0}
 
 
+def test_bracket_match_status_pending_when_not_played():
+    players = _players(("p1", "Favorito", 1), ("p2", "Sorpresa", None))
+    counts = _make_counts(100, {"p1": {"CAMPEON": 90}, "p2": {"CAMPEON": 10}})
+    payload = json_export.build_export(counts, players, _base_meta(), n_simulations=100)
+    match = payload["bracket"][0]["matches"][0]
+    assert match["status"] == "pending"
+    assert "predicted_id" not in match  # en pending, favorite_id YA es la predicción
+
+
+def test_bracket_match_status_miss_carries_who_the_model_predicted():
+    # El modelo favorece a p1 (mejor serve/return); ganó p2 de verdad.
+    players = {
+        "p1": Player(player_id="p1", full_name="Favorito", seed=1, serve_pct=0.70, return_pct=0.40),
+        "p2": Player(player_id="p2", full_name="Sorpresa", seed=None, serve_pct=0.40, return_pct=0.20),
+    }
+    counts = _make_counts(100, {"p1": {"CAMPEON": 90}, "p2": {"CAMPEON": 10}})
+    meta = _base_meta(is_live=True, known_results={("F", 1): "p2"})
+    payload = json_export.build_export(counts, players, meta, n_simulations=100)
+    match = payload["bracket"][0]["matches"][0]
+    assert match["status"] == "miss"
+    assert match["favorite_id"] == "p2"    # el cuadro muestra el ganador REAL
+    assert match["predicted_id"] == "p1"   # ...y aparte a quién tenía el modelo
+
+
+def test_bracket_match_status_hit_when_model_was_right():
+    # Mismo cuadro, pero ganó p1 -- el que el modelo daba como favorito.
+    players = {
+        "p1": Player(player_id="p1", full_name="Favorito", seed=1, serve_pct=0.70, return_pct=0.40),
+        "p2": Player(player_id="p2", full_name="Sorpresa", seed=None, serve_pct=0.40, return_pct=0.20),
+    }
+    counts = _make_counts(100, {"p1": {"CAMPEON": 90}, "p2": {"CAMPEON": 10}})
+    meta = _base_meta(is_live=True, known_results={("F", 1): "p1"})
+    payload = json_export.build_export(counts, players, meta, n_simulations=100)
+    match = payload["bracket"][0]["matches"][0]
+    assert match["status"] == "hit"
+    assert "predicted_id" not in match  # en hit sería idéntico a favorite_id
+
+
+def test_bracket_status_and_round_accuracy_agree():
+    # Las dos vistas (cuadro pintado + tabla agregada) salen del MISMO cálculo
+    # -- si alguna vez divergen, es un bug de consistencia visible para el
+    # usuario (un cruce en rojo pero la tabla diciendo 1/1 acertado).
+    players = {
+        "p1": Player(player_id="p1", full_name="Favorito", seed=1, serve_pct=0.70, return_pct=0.40),
+        "p2": Player(player_id="p2", full_name="Sorpresa", seed=None, serve_pct=0.40, return_pct=0.20),
+    }
+    counts = _make_counts(100, {"p1": {"CAMPEON": 90}, "p2": {"CAMPEON": 10}})
+    meta = _base_meta(is_live=True, known_results={("F", 1): "p2"})
+    payload = json_export.build_export(counts, players, meta, n_simulations=100)
+
+    hits = sum(
+        1 for r in payload["bracket"] for m in r["matches"] if m.get("status") == "hit"
+    )
+    total_played = sum(
+        1 for r in payload["bracket"] for m in r["matches"] if m.get("status") in ("hit", "miss")
+    )
+    assert hits == sum(r["correct"] for r in payload["round_accuracy"])
+    assert total_played == sum(r["total"] for r in payload["round_accuracy"])
+
+
 def test_round_accuracy_scores_against_prior_round_prediction_not_actual_winner():
     # El modelo favorece a p1 (mejor serve/return) -- si p2 ganó la final de
     # verdad, eso es un FALLO del modelo, no debe salir 1/1 acierto (esa

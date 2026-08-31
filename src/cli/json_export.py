@@ -25,7 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from src.cli.formatting import DISPLAY_ROUNDS
-from src.cli.pipeline import build_predicted_bracket, compute_round_accuracy
+from src.cli.pipeline import build_predicted_bracket, compute_match_predictions, compute_round_accuracy
 
 
 def _probabilities(round_counts: dict[str, int], n_simulations: int) -> dict[str, float]:
@@ -73,30 +73,49 @@ def _round_snapshots_payload(round_snapshots: list[dict]) -> list[dict]:
     ]
 
 
-def _bracket_payload(players_by_id: dict[str, object], model: str, known_results) -> list[dict]:
+def _bracket_payload(
+    players_by_id: dict[str, object],
+    model: str,
+    known_results,
+    match_predictions: dict[tuple[str, int], str],
+) -> list[dict]:
+    """Cuadro proyectado, con el veredicto de cada cruce ya jugado.
+
+    `status` por partido:
+    - "hit"     -> el modelo tenía a este ganador (`predicted_id` == ganador real)
+    - "miss"    -> el modelo tenía al otro; `predicted_id` dice a quién
+    - "pending" -> todavía no se jugó; `favorite_id`/`prob` son la proyección
+
+    `predicted_id` solo aparece en "miss" (en "hit" sería idéntico a
+    `favorite_id`, y en "pending" el `favorite_id` YA es la predicción --
+    repetirlo infla el JSON sin agregar información).
+
+    Ojo con `prob` en un partido ya jugado: `build_predicted_bracket` le pone
+    1.0 (es el resultado real inyectado, no una probabilidad del modelo), así
+    que el frontend NO debe mostrarlo como "100% de confianza" -- ver
+    `renderBracket` en docs/app.js."""
     rounds, _champion = build_predicted_bracket(players_by_id, model, known_results=known_results)
-    return [
-        {
-            "round": matches[0]["round"] if matches else None,
-            "matches": [
-                {
-                    "favorite_id": m["favorite"].player_id,
-                    "underdog_id": m["underdog"].player_id,
-                    "prob": round(m["prob"], 4),
-                }
-                for m in matches
-            ],
-        }
-        for matches in rounds
-    ]
-
-
-def _round_accuracy_payload(players_by_id: dict[str, object], model: str, known_results) -> list[dict]:
-    """Aciertos del modelo por ronda ya jugada -- ver el docstring de
-    `compute_round_accuracy` para el criterio exacto (condicionado solo en
-    resultados PREVIOS a la ronda, nunca la trampa de comparar contra el
-    ganador real ya inyectado como favorito)."""
-    return compute_round_accuracy(players_by_id, model, known_results or {})
+    payload: list[dict] = []
+    for matches in rounds:
+        round_name = matches[0]["round"] if matches else None
+        round_payload: list[dict] = []
+        for i, m in enumerate(matches, start=1):
+            entry = {
+                "favorite_id": m["favorite"].player_id,
+                "underdog_id": m["underdog"].player_id,
+                "prob": round(m["prob"], 4),
+            }
+            predicted_id = match_predictions.get((round_name, i))
+            if predicted_id is None:
+                entry["status"] = "pending"
+            elif predicted_id == m["favorite"].player_id:
+                entry["status"] = "hit"
+            else:
+                entry["status"] = "miss"
+                entry["predicted_id"] = predicted_id
+            round_payload.append(entry)
+        payload.append({"round": round_name, "matches": round_payload})
+    return payload
 
 
 def build_export(
@@ -109,6 +128,11 @@ def build_export(
     `export_json` para que los tests puedan verificar la estructura sin pasar
     por el filesystem)."""
     model = meta.get("model", "serve_return")
+    known_results = meta.get("known_results") or {}
+    # UNA sola vez: reconstruir el cuadro predicho por ronda (lo que hace
+    # `compute_match_predictions`) no es gratis, y lo necesitan tanto el
+    # veredicto por cruce del bracket como la tabla agregada de aciertos.
+    match_predictions = compute_match_predictions(players_by_id, model, known_results)
     return {
         "meta": {
             "tournament_name": meta.get("tournament_name"),
@@ -122,8 +146,10 @@ def build_export(
         },
         "players": _players_payload(counts, players_by_id, n_simulations),
         "round_snapshots": _round_snapshots_payload(meta.get("round_snapshots") or []),
-        "bracket": _bracket_payload(players_by_id, model, meta.get("known_results")),
-        "round_accuracy": _round_accuracy_payload(players_by_id, model, meta.get("known_results")),
+        "bracket": _bracket_payload(players_by_id, model, known_results, match_predictions),
+        "round_accuracy": compute_round_accuracy(
+            players_by_id, model, known_results, match_predictions=match_predictions
+        ),
     }
 
 

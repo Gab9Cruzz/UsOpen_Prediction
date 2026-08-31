@@ -342,46 +342,83 @@ def build_predicted_bracket(
     return rounds, current[0]
 
 
-def compute_round_accuracy(
+def compute_match_predictions(
     players_by_id: dict[str, object], model: str, known_results: monte_carlo.KnownResults
-) -> list[dict]:
-    """Aciertos del modelo por ronda ya jugada (pedido del usuario: "¿se
-    puede ver un indicador de cuantos aciertos tuvo el modelo por ronda?").
+) -> dict[tuple[str, int], str]:
+    """`(ronda, índice de partido)` -> `player_id` que el modelo daba como
+    favorito ENTRANDO a esa ronda, solo para los cruces que YA se jugaron de
+    verdad. Fuente única de "¿el modelo le pegó a este partido?": la usan
+    tanto `compute_round_accuracy` (agregado por ronda) como el cuadro
+    proyectado del dashboard (verde/rojo por cruce).
 
-    Para cada ronda con al menos un resultado real conocido, reconstruye el
-    cuadro predicho "entrando a esa ronda" -- condicionado SOLO en los
-    resultados reales de rondas ANTERIORES, mismo criterio que
-    `_generate_round_snapshots` -- y compara el favorito de cada cruce contra
-    quién ganó de verdad. Comparar contra `build_predicted_bracket(...,
-    known_results=known_results)` (el cuadro que ya muestra la web) sería
-    trampa: para un partido ya jugado esa función devuelve el ganador REAL
-    como "favorito" (prob=1.0), así que siempre acertaría 100%.
+    Para cada ronda con al menos un resultado real, reconstruye el cuadro
+    predicho condicionado SOLO en los resultados de rondas ANTERIORES (mismo
+    criterio que `_generate_round_snapshots`). Condicionar en la ronda misma
+    sería trampa: `build_predicted_bracket(known_results=<todo>)` devuelve el
+    ganador REAL como "favorito" (prob=1.0) para un partido ya jugado, así
+    que compararlo contra la realidad daría 100% de acierto siempre.
 
-    Ronda sin ningún resultado real todavía: `total=0` (el frontend debe
-    mostrarla como "--", no como 0% -- 0% sugeriría que el modelo falló
-    todo, cuando en realidad no hay nada que medir aún). Ronda con
-    resultados parciales (partido en curso): `total` cuenta solo los
-    partidos ya decididos, no los `MATCHES_PER_ROUND[ronda]` completos."""
-    results: list[dict] = []
+    Los cruces de un partido ya jugado son siempre los REALES, no una
+    proyección: un partido no puede estar decidido si los dos partidos que lo
+    alimentan no lo están, así que al condicionar en las rondas previas los
+    dos jugadores de ese cruce quedan fijados por la realidad."""
+    predictions: dict[tuple[str, int], str] = {}
     for round_name in MATCH_ROUNDS:
-        decided = sum(1 for (r, _m) in known_results if r == round_name)
-        if decided == 0:
-            results.append({"round_name": round_name, "correct": 0, "total": 0})
+        if not any(r == round_name for (r, _m) in known_results):
             continue
 
         prior_rounds = MATCH_ROUNDS[: MATCH_ROUNDS.index(round_name)]
         filtered_known = {(r, m): pid for (r, m), pid in known_results.items() if r in prior_rounds}
         rounds, _champion = build_predicted_bracket(players_by_id, model, known_results=filtered_known)
-        round_matches = next(matches for matches in rounds if matches and matches[0]["round"] == round_name)
+        # `next(..., None)`: un draw más chico que 128 (tests unitarios) no
+        # tiene todas las rondas de MATCH_ROUNDS -- se saltea en vez de
+        # reventar con StopIteration.
+        round_matches = next(
+            (matches for matches in rounds if matches and matches[0]["round"] == round_name), None
+        )
+        if round_matches is None:
+            continue
 
-        correct = 0
-        total = 0
         for i, m in enumerate(round_matches, start=1):
-            actual_id = known_results.get((round_name, i))
-            if actual_id is None:
-                continue
-            total += 1
-            if m["favorite"].player_id == actual_id:
-                correct += 1
-        results.append({"round_name": round_name, "correct": correct, "total": total})
+            if (round_name, i) in known_results:
+                predictions[(round_name, i)] = m["favorite"].player_id
+    return predictions
+
+
+def compute_round_accuracy(
+    players_by_id: dict[str, object],
+    model: str,
+    known_results: monte_carlo.KnownResults,
+    match_predictions: dict[tuple[str, int], str] | None = None,
+) -> list[dict]:
+    """Aciertos del modelo por ronda ya jugada (pedido del usuario: "¿se
+    puede ver un indicador de cuantos aciertos tuvo el modelo por ronda?"),
+    agregando `compute_match_predictions`.
+
+    Ronda sin ningún resultado real todavía: `total=0` (el frontend debe
+    mostrarla como "--", no como 0% -- 0% sugeriría que el modelo falló
+    todo, cuando en realidad no hay nada que medir aún). Ronda con
+    resultados parciales (partido en curso): `total` cuenta solo los
+    partidos ya decididos, no los `MATCHES_PER_ROUND[ronda]` completos.
+
+    `match_predictions`: si el caller ya las calculó (p.ej. el exportador
+    JSON, que las necesita ADEMÁS para pintar el cuadro proyectado), se
+    reusan -- reconstruir el bracket una vez por ronda no es gratis."""
+    if match_predictions is None:
+        match_predictions = compute_match_predictions(players_by_id, model, known_results)
+
+    results: list[dict] = []
+    for round_name in MATCH_ROUNDS:
+        decided = [
+            (predicted_id, known_results[(r, i)])
+            for (r, i), predicted_id in match_predictions.items()
+            if r == round_name
+        ]
+        results.append(
+            {
+                "round_name": round_name,
+                "correct": sum(1 for predicted, actual in decided if predicted == actual),
+                "total": len(decided),
+            }
+        )
     return results

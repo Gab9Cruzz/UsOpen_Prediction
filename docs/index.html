@@ -31,6 +31,12 @@
     --series-8: #e66767;        /* red */
     --good: #0ca30c;
     --ball-yellow: #ccff00;     /* acento de marca -- solo detalles puntuales */
+    /* Veredicto por cruce del cuadro proyectado. Verde/rojo NUNCA son la
+       única señal (un ~8% de los hombres no distingue rojo de verde): cada
+       cruce marcado lleva además un símbolo ✓/✗ y el tooltip lo dice con
+       palabras. */
+    --hit: #4caf4c;             /* = series-6, verde que pasa sobre fondo oscuro */
+    --miss: #e66767;            /* = series-8 */
   }
   * { box-sizing: border-box; }
   html, body { background: var(--surface-0); }
@@ -82,8 +88,36 @@
     transition: border-color .12s, background .12s;
   }
   .bracket-match:hover { border-color: var(--series-1); background: var(--surface-2); }
+  /* Después de :hover a propósito -- misma especificidad, así el veredicto
+     de un cruce ya jugado no se pierde al pasar el mouse (el hover sigue
+     cambiando el fondo, que es la afordancia que importa). */
+  .bracket-match.hit { border-color: var(--hit); }
+  .bracket-match.miss { border-color: var(--miss); }
+  .bracket-mark {
+    position: absolute; top: -7px; right: -7px;
+    width: 16px; height: 16px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; line-height: 1;
+    border: 1.5px solid var(--surface-0);
+  }
+  .bracket-match.hit .bracket-mark { background: var(--hit); color: #06240f; }
+  .bracket-match.miss .bracket-mark { background: var(--miss); color: #2f0a0a; }
   .bracket-match .fav { font-weight: 700; color: var(--text-primary); }
   .bracket-match .und { color: var(--text-muted); }
+  /* Un cruce ya jugado no es una proyección: el perdedor real va tachado
+     para que se lea "esto ya pasó" sin depender del color. */
+  .bracket-match.hit .und, .bracket-match.miss .und { text-decoration: line-through; opacity: 0.75; }
+
+  .bracket-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 14px; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 0.76rem; color: var(--text-secondary); }
+  .legend-chip {
+    width: 26px; height: 17px; border-radius: 4px; flex: none;
+    background: var(--surface-1); border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800; line-height: 1;
+  }
+  .legend-chip.hit { border-color: var(--hit); background: rgba(76,175,76,0.12); color: var(--hit); }
+  .legend-chip.miss { border-color: var(--miss); background: rgba(230,103,103,0.12); color: var(--miss); }
   /* Interactividad pedida en el plan: el % NO está siempre visible -- solo
      aparece en hover (a diferencia de html_report.py, que lo muestra fijo). */
   .bracket-tooltip {
@@ -203,7 +237,12 @@
     <!-- Bracket -->
     <section class="card px-6 py-5">
       <h2 class="text-base font-semibold mb-1">Cuadro proyectado</h2>
-      <p class="muted text-xs mb-4">Un solo camino de favoritos (probabilidad exacta del modelo, sin Monte Carlo) -- pasá el mouse sobre un cruce para ver el %.</p>
+      <p class="muted text-xs mb-3">Un solo camino de favoritos (probabilidad exacta del modelo, sin Monte Carlo). Los cruces ya jugados quedan marcados según le haya ido al modelo; pasá el mouse sobre cualquiera para ver el detalle.</p>
+      <div class="bracket-legend">
+        <span class="legend-item"><span class="legend-chip hit">✓</span>Acertado — el modelo tenía a este ganador</span>
+        <span class="legend-item"><span class="legend-chip miss">✗</span>Fallado — ganó el otro jugador</span>
+        <span class="legend-item"><span class="legend-chip"></span>Sin jugar — proyección del modelo, con su %</span>
+      </div>
       <div class="overflow-x-auto pb-2">
         <div class="bracket" id="bracket-root"></div>
       </div>

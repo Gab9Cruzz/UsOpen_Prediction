@@ -356,7 +356,10 @@ function renderBracket(bracket, playersById) {
 
     for (const m of roundData.matches) {
       const matchEl = document.createElement("div");
-      matchEl.className = "bracket-match";
+      // `status` puede faltar en un JSON viejo cacheado (schema previo a este
+      // campo) -- se trata como "pending", el comportamiento de antes.
+      const status = m.status || "pending";
+      matchEl.className = `bracket-match${status === "pending" ? "" : ` ${status}`}`;
 
       const fav = document.createElement("div");
       fav.className = "fav";
@@ -368,9 +371,27 @@ function renderBracket(bracket, playersById) {
 
       const tooltip = document.createElement("div");
       tooltip.className = "bracket-tooltip";
-      tooltip.textContent = `${name(m.favorite_id)} vence a ${name(m.underdog_id)} — ${(m.prob * 100).toFixed(0)}%`;
+      if (status === "hit") {
+        tooltip.textContent = `✓ ${name(m.favorite_id)} venció a ${name(m.underdog_id)} — el modelo lo acertó`;
+      } else if (status === "miss") {
+        // Para un cruce ya jugado el favorito mostrado es el ganador REAL, no
+        // la predicción -- por eso hace falta `predicted_id` para poder decir
+        // a quién tenía el modelo.
+        tooltip.textContent = `✗ ${name(m.favorite_id)} venció a ${name(m.underdog_id)} — el modelo tenía a ${name(m.predicted_id)}`;
+      } else {
+        // Solo acá el % significa algo: en un partido ya jugado `prob` es 1.0
+        // (resultado real inyectado por build_predicted_bracket), no la
+        // confianza del modelo -- mostrarlo diría "100%" y sería mentira.
+        tooltip.textContent = `${name(m.favorite_id)} vence a ${name(m.underdog_id)} — ${(m.prob * 100).toFixed(0)}%`;
+      }
 
       matchEl.append(fav, und, tooltip);
+      if (status !== "pending") {
+        const mark = document.createElement("span");
+        mark.className = "bracket-mark";
+        mark.textContent = status === "hit" ? "✓" : "✗";
+        matchEl.appendChild(mark);
+      }
       matchesWrap.appendChild(matchEl);
     }
 
