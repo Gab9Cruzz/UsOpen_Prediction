@@ -8,12 +8,16 @@ const DATA_URL = "data/resultados_simulacion.json";
 const DISPLAY_ROUNDS = ["R32", "R16", "QF", "SF", "F", "CAMPEON"];
 const ROUND_LABELS = { R128: "R128", R64: "R64", R32: "R32", R16: "R16", QF: "QF", SF: "SF", F: "Final", CAMPEON: "Campeón" };
 const MODEL_LABELS = {
-  serve_return: "Saque/Resto (juego a juego)",
+  serve_return: "Saque/Resto (análisis juego a juego)",
   elo: "Elo de superficie",
   ensemble: "Ensamble (70% Saque/Resto + 30% Elo)",
 };
 const TOP_N_BAR_CHART = 12;
 const TOP_N_FLUCTUATION = 6;
+const MONTHS_ES = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
 
 function cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -27,6 +31,23 @@ function binomialCi95Pp(p, n) {
   if (!n) return 0;
   const se = Math.sqrt((p * (1 - p)) / n);
   return 1.96 * se * 100;
+}
+
+function formatCutoffDateEs(cutoff) {
+  // meta.cutoff_date llega como "YYYYMMDD" (a veces con guiones) -- lo
+  // pasamos a "31 de agosto de 2026" para el copy institucional del
+  // masthead. Si el formato no matchea, se devuelve tal cual en vez de
+  // reventar (nunca vimos otro formato, pero esto no es una validación de
+  // negocio -- es puro texto de presentación).
+  if (!cutoff) return "";
+  const digits = String(cutoff).replace(/-/g, "");
+  if (!/^\d{8}$/.test(digits)) return String(cutoff);
+  const year = digits.slice(0, 4);
+  const month = parseInt(digits.slice(4, 6), 10);
+  const day = parseInt(digits.slice(6, 8), 10);
+  const monthName = MONTHS_ES[month - 1];
+  if (!monthName) return String(cutoff);
+  return `${parseInt(day, 10)} de ${monthName} de ${year}`;
 }
 
 function relativeTimeEs(isoString) {
@@ -95,15 +116,50 @@ function render(payload) {
   renderFluctuationChart(roundSnapshots, playersById);
   renderAccuracyTable(roundAccuracy);
   renderBracket(bracket, playersById);
-  renderTable(players, meta);
+  renderTable(players, meta, computeEliminatedIds(bracket));
+}
+
+function computeEliminatedIds(bracket) {
+  // Un jugador queda "eliminado" apenas pierde un cruce ya jugado. En un
+  // match con status != "pending", `favorite_id` es el GANADOR real (no la
+  // predicción -- ver el comentario en `_bracket_payload`, json_export.py) y
+  // `underdog_id` es quien perdió esa ronda: por eso alcanza con juntar
+  // todos los `underdog_id` de cruces jugados en cualquier ronda del cuadro,
+  // sin tocar ningún cómputo de negocio (solo lee un campo que el export ya
+  // expone).
+  const eliminated = new Set();
+  if (!Array.isArray(bracket)) return eliminated;
+  for (const roundData of bracket) {
+    for (const m of roundData.matches) {
+      const status = m.status || "pending";
+      if (status !== "pending") {
+        eliminated.add(m.underdog_id);
+      }
+    }
+  }
+  return eliminated;
 }
 
 function renderMasthead(meta) {
-  document.getElementById("masthead-title").textContent = `${meta.tournament_name} ${meta.tournament_year}`;
+  const tournamentLabel = `${meta.tournament_name} ${meta.tournament_year}`;
+  document.getElementById("masthead-title").textContent = tournamentLabel;
+
+  // Copy institucional (reemplaza el texto informal anterior) -- los
+  // números (modelo, simulaciones, corte de datos) siguen viniendo de
+  // `meta` para no quedar desactualizados de un torneo al siguiente; el
+  // resto es texto fijo pedido para el masthead.
   const modelLabel = MODEL_LABELS[meta.model] || meta.model;
+  const simsLabel = meta.n_simulations.toLocaleString("en-US");
+  const cutoffLabel = formatCutoffDateEs(meta.cutoff_date);
   document.getElementById("masthead-meta").textContent =
-    `modelo: ${modelLabel} · ${meta.n_simulations.toLocaleString("es-AR")} simulaciones · corte de datos: ${meta.cutoff_date}`;
-  document.getElementById("masthead-note").textContent = meta.note || "";
+    `Modelo Predictivo: ${modelLabel} | ${simsLabel} iteraciones de simulación | Corte de datos: ${cutoffLabel}.`;
+
+  // "(En Vivo)" solo cuando `meta.is_live` es true -- mismo dato que ya
+  // controla `live-badge`, así el copy no queda diciendo "En Vivo" a un
+  // torneo terminado.
+  const liveSuffix = meta.is_live ? " (En Vivo)" : "";
+  document.getElementById("masthead-note").textContent =
+    `Cuadro Oficial ${tournamentLabel} - Fase 4${liveSuffix}: Sorteo verificado vía Wikipedia, con actualización continua de resultados oficiales del torneo. Consulte el histórico por rondas en la sección inferior.`;
 
   const liveBadge = document.getElementById("live-badge");
   liveBadge.classList.toggle("hidden", !meta.is_live);
@@ -412,13 +468,18 @@ function renderBracket(bracket, playersById) {
   champMatches.style.cssText = `height:${unitHeight}px; justify-content:center;`;
   const champCard = document.createElement("div");
   champCard.className = "champion-card";
-  champCard.textContent = `🏆 ${name(championId)}`;
+  const champTrophy = document.createElement("img");
+  champTrophy.src = "img/logo-trofeo.png";
+  champTrophy.alt = "";
+  champTrophy.className = "champ-trophy-icon";
+  champCard.append(champTrophy, ` ${name(championId)}`);
   champMatches.appendChild(champCard);
   champCol.append(champLabel, champMatches);
   root.appendChild(champCol);
 }
 
-function renderTable(players, meta) {
+function renderTable(players, meta, eliminatedIds) {
+  const eliminated = eliminatedIds || new Set();
   const head = document.getElementById("players-table-head");
   head.textContent = "";
   const headCells = ["#", "Jugador", "Seed", ...DISPLAY_ROUNDS.map((r) => (r === "CAMPEON" ? "Campeón (±IC95%)" : ROUND_LABELS[r]))];
@@ -430,8 +491,18 @@ function renderTable(players, meta) {
 
   const body = document.getElementById("players-table-body");
   body.textContent = "";
+
+  // El "#" sigue siendo el ranking por probabilidad de campeón (orden que ya
+  // trae `players`, sin recalcular nada) -- lo único que cambia es dónde
+  // queda la FILA dentro del tbody: activos primero, eliminados al fondo
+  // (cada grupo conserva su orden relativo original).
+  const activeRows = [];
+  const eliminatedRows = [];
+
   players.forEach((p, i) => {
+    const isEliminated = eliminated.has(p.player_id);
     const tr = document.createElement("tr");
+    if (isEliminated) tr.className = "eliminated-row";
 
     const rankTd = document.createElement("td");
     rankTd.className = "rank";
@@ -441,6 +512,12 @@ function renderTable(players, meta) {
     const nameTd = document.createElement("td");
     nameTd.className = "player-name";
     nameTd.textContent = p.full_name;
+    if (isEliminated) {
+      const tag = document.createElement("span");
+      tag.className = "eliminated-tag";
+      tag.textContent = "Eliminado";
+      nameTd.appendChild(tag);
+    }
     tr.appendChild(nameTd);
 
     const seedTd = document.createElement("td");
@@ -468,8 +545,11 @@ function renderTable(players, meta) {
       tr.appendChild(td);
     }
 
-    body.appendChild(tr);
+    (isEliminated ? eliminatedRows : activeRows).push(tr);
   });
+
+  for (const tr of activeRows) body.appendChild(tr);
+  for (const tr of eliminatedRows) body.appendChild(tr);
 }
 
 loadData();

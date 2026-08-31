@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Predicción US Open</title>
 <meta name="description" content="Predicción del US Open actualizada automáticamente todos los días del torneo, con simulación Monte Carlo del cuadro completo.">
+<link rel="icon" type="image/png" href="img/logo-pagina.png">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
 <style>
@@ -151,6 +152,37 @@
   .accuracy-na { color: var(--text-muted); }
 
   #error-banner, #empty-banner { display: none; }
+
+  /* Logo del header -- al lado del título, altura fija para no romper el
+     ritmo vertical del masthead sea cual sea el aspect ratio del PNG. */
+  .header-logo { height: 46px; width: auto; flex: none; object-fit: contain; vertical-align: middle; }
+
+  /* Trofeo del hero-card, reemplaza el emoji 🏆 -- mismo peso visual que el
+     texto de al lado (título "favorito del modelo"), sin estirar el layout
+     flex del card. */
+  .hero-trophy { height: 60px; width: auto; flex: none; object-fit: contain; vertical-align: middle; }
+  /* Versión chica del mismo trofeo, para usar inline junto a texto (p. ej.
+     "🏆 Fulano" -> "<img> Fulano" en la columna de campeón del bracket). */
+  .champ-trophy-icon { height: 1.15em; width: auto; vertical-align: -0.2em; object-fit: contain; }
+
+  /* Jugadores eliminados en la tabla "Cuadro completo": se hunden al fondo
+     del tbody (reordenados en renderTable, conservando el ranking original
+     en la columna "#") y se atenúan en escala de grises -- la etiqueta
+     "Eliminado" es la señal que no depende solo de color/opacidad (mismo
+     criterio que el resto del dashboard: ver comentario sobre daltonismo
+     más arriba). */
+  tr.eliminated-row { opacity: 0.55; }
+  tr.eliminated-row td { border-top-color: var(--border); }
+  tr.eliminated-row .rank,
+  tr.eliminated-row .player-name,
+  tr.eliminated-row .champ-pct { color: var(--text-muted); }
+  .eliminated-tag {
+    display: inline-block; margin-left: 8px; padding: 1px 7px;
+    border-radius: 999px; font-size: 0.62rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-muted); border: 1px solid var(--border);
+    background: var(--surface-2); vertical-align: middle;
+  }
 </style>
 </head>
 <body class="min-h-screen">
@@ -158,9 +190,12 @@
 <header class="border-b" style="border-color: var(--border); background: linear-gradient(180deg, #0f1b30, var(--surface-0));">
   <div class="max-w-6xl mx-auto px-5 py-6">
     <div class="flex flex-wrap items-baseline justify-between gap-3">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight" id="masthead-title">Predicción US Open</h1>
-        <p class="secondary text-sm mt-1" id="masthead-meta">Cargando…</p>
+      <div class="flex items-center gap-3">
+        <img src="img/logo-pagina.png" alt="Logo Predecir US Open" class="header-logo">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight" id="masthead-title">Predicción US Open</h1>
+          <p class="secondary text-sm mt-1" id="masthead-meta">Cargando…</p>
+        </div>
       </div>
       <div class="flex items-center gap-2">
         <span id="live-badge" class="hidden text-xs font-semibold px-2 py-1 rounded-full" style="background: rgba(12,163,12,0.15); color: var(--good); border: 1px solid rgba(12,163,12,0.4);">● EN VIVO</span>
@@ -190,7 +225,7 @@
 
     <!-- Favorito destacado -->
     <section class="card px-6 py-5 flex items-center gap-5" id="hero-card">
-      <div class="text-4xl">🏆</div>
+      <img src="img/logo-trofeo.png" alt="Trofeo" class="hero-trophy">
       <div>
         <div class="muted text-xs uppercase tracking-wide">Favorito del modelo</div>
         <div class="text-2xl font-bold" id="hero-name">--</div>
@@ -250,7 +285,8 @@
 
     <!-- Tabla completa -->
     <section class="card px-6 py-5">
-      <h2 class="text-base font-semibold mb-4">Cuadro completo</h2>
+      <h2 class="text-base font-semibold mb-1">Cuadro completo</h2>
+      <p class="muted text-xs mb-4">Los jugadores eliminados bajan al fondo de la tabla y quedan marcados en gris.</p>
       <div class="overflow-x-auto">
         <table id="players-table">
           <thead><tr id="players-table-head"></tr></thead>
