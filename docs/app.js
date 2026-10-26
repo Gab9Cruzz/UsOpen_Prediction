@@ -110,6 +110,16 @@ function render(payload) {
   const { meta, players, round_snapshots: roundSnapshots, bracket, round_accuracy: roundAccuracy } = payload;
   const playersById = Object.fromEntries(players.map((p) => [p.player_id, p]));
 
+  // Modo post-evento: el torneo está cerrado cuando la final ya tiene
+  // resultado real. Se decide SOLO con los datos (no con una fecha fija), así
+  // la próxima edición vuelve sola al modo "en vivo" apenas el workflow
+  // exporte un cuadro nuevo sin jugar.
+  const closed = computeClosedState(bracket, roundSnapshots, playersById);
+  if (closed) {
+    renderClosed(payload, playersById, closed);
+    return;
+  }
+
   renderMasthead(meta);
   renderHero(players[0]);
   renderChampionChart(players, meta);
@@ -117,6 +127,234 @@ function render(payload) {
   renderAccuracyTable(roundAccuracy);
   renderBracket(bracket, playersById);
   renderTable(players, meta, computeEliminatedIds(bracket));
+}
+
+// ---------------------------------------------------------------------------
+// Modo post-evento (torneo cerrado)
+// ---------------------------------------------------------------------------
+
+const NEXT_ROUND = { R128: "R64", R64: "R32", R32: "R16", R16: "QF", QF: "SF", SF: "F", F: "CAMPEON" };
+const ROUND_RESULT_LABELS = {
+  R128: "1.ª ronda", R64: "2.ª ronda", R32: "3.ª ronda", R16: "Octavos",
+  QF: "Cuartos", SF: "Semifinal", F: "Finalista", CAMPEON: "Campeón",
+};
+
+function computeClosedState(bracket, roundSnapshots, playersById) {
+  if (!Array.isArray(bracket) || bracket.length === 0) return null;
+  const finalRound = bracket[bracket.length - 1];
+  if (finalRound.round !== "F" || finalRound.matches.length !== 1) return null;
+  const finalMatch = finalRound.matches[0];
+  if (!finalMatch.status || finalMatch.status === "pending") return null;
+
+  // En un cruce jugado, favorite_id = ganador real y underdog_id = perdedor.
+  const championId = finalMatch.favorite_id;
+  const runnerUpId = finalMatch.underdog_id;
+
+  const reached = {};
+  for (const roundData of bracket) {
+    for (const m of roundData.matches) {
+      if (m.status && m.status !== "pending") reached[m.underdog_id] = roundData.round;
+    }
+  }
+  reached[runnerUpId] = "F";
+  reached[championId] = "CAMPEON";
+
+  const snapshotsByRound = Object.fromEntries((roundSnapshots || []).map((s) => [s.round_name, s.players]));
+
+  // Probabilidad que el modelo le daba a cada jugador de ganar SU partido de
+  // esa ronda, tomada del snapshot "entrando a la ronda": P(llegar a la
+  // siguiente). Entre los dos jugadores de un mismo cruce suman 1 (se
+  // normaliza igual por si hay redondeo). R128 no trae la columna R64 en el
+  // snapshot, así que esa ronda no tiene probabilidad por partido.
+  const matchProb = (round, winnerId, loserId) => {
+    const snap = snapshotsByRound[round];
+    const next = NEXT_ROUND[round];
+    if (!snap || !next || !snap[winnerId] || !snap[loserId]) return null;
+    const pw = snap[winnerId][next];
+    const pl = snap[loserId][next];
+    if (pw == null || pl == null || pw + pl === 0) return null;
+    return pw / (pw + pl);
+  };
+
+  let total = 0;
+  let correct = 0;
+  let brierSum = 0;
+  let brierN = 0;
+  const upsets = [];
+  for (const roundData of bracket) {
+    for (const m of roundData.matches) {
+      if (!m.status || m.status === "pending") continue;
+      total += 1;
+      if (m.status === "hit") correct += 1;
+      const pw = matchProb(roundData.round, m.favorite_id, m.underdog_id);
+      if (pw != null) {
+        brierSum += (1 - pw) ** 2;
+        brierN += 1;
+        if (m.status === "miss") {
+          upsets.push({ round: roundData.round, winnerId: m.favorite_id, loserId: m.underdog_id, loserProb: 1 - pw });
+        }
+      }
+    }
+  }
+  upsets.sort((a, b) => b.loserProb - a.loserProb);
+
+  const pre = snapshotsByRound.R128 || null;
+  let championPreRank = null;
+  let preFavoriteId = null;
+  if (pre) {
+    const ranked = Object.entries(pre).sort((a, b) => b[1].CAMPEON - a[1].CAMPEON).map(([id]) => id);
+    championPreRank = ranked.indexOf(championId) + 1;
+    preFavoriteId = ranked[0];
+  }
+
+  return {
+    championId, runnerUpId, finalMatch, reached, snapshotsByRound, pre,
+    total, correct, brier: brierN ? brierSum / brierN : null, brierN,
+    upsets, championPreRank, preFavoriteId,
+    finalProb: matchProb("F", championId, runnerUpId),
+  };
+}
+
+function renderClosed(payload, playersById, closed) {
+  const { meta, players, round_snapshots: roundSnapshots, bracket, round_accuracy: roundAccuracy } = payload;
+  const name = (id) => (playersById[id] ? playersById[id].full_name : id);
+
+  renderMasthead(meta);
+  const tournamentLabel = `${meta.tournament_name} ${meta.tournament_year}`;
+  document.getElementById("live-badge").classList.add("hidden");
+  document.getElementById("closed-badge").classList.remove("hidden");
+  document.getElementById("updated-badge").textContent = `datos finales: ${formatCutoffDateEs(meta.cutoff_date)}`;
+  document.getElementById("masthead-note").textContent =
+    `Edición finalizada. Este tablero siguió el ${tournamentLabel} en vivo de principio a fin: cuadro oficial vía Wikipedia, ` +
+    `resultados reales incorporados a medida que se jugaban y una predicción congelada al inicio de cada ronda. ` +
+    `Abajo queda el registro completo de lo que el modelo predijo y cómo le fue.`;
+
+  // Hero: campeón real.
+  const pre = closed.pre;
+  document.getElementById("hero-card").classList.add("champion-hero");
+  document.getElementById("hero-label").textContent = `Campeón ${tournamentLabel}`;
+  document.getElementById("hero-name").textContent = name(closed.championId);
+  document.getElementById("hero-sub").textContent = `Venció a ${name(closed.runnerUpId)} en la final.`;
+  const detail = document.getElementById("hero-detail");
+  const parts = [];
+  if (pre && pre[closed.championId]) {
+    parts.push(`Antes del primer partido el modelo le daba ${fmtPct(pre[closed.championId].CAMPEON)} de ser campeón (${closed.championPreRank}.º favorito de 128)`);
+  }
+  if (closed.finalProb != null) {
+    parts.push(`entrando a la final, ${fmtPct(closed.finalProb)} — el modelo lo tenía como favorito y acertó`);
+  }
+  if (parts.length) {
+    detail.textContent = `${parts.join("; ")}.`;
+    detail.classList.remove("hidden");
+  }
+
+  renderRecap(closed, roundAccuracy, name);
+  renderUpsets(closed, name);
+
+  // Probabilidad de campeón: después del torneo lo interesante es la foto
+  // PRE-torneo (la del último snapshot ya es 100/0 de hecho).
+  const prePlayers = pre
+    ? players
+        .filter((p) => pre[p.player_id])
+        .map((p) => ({ ...p, probabilities: pre[p.player_id] }))
+        .sort((a, b) => b.probabilities.CAMPEON - a.probabilities.CAMPEON)
+    : players;
+  document.getElementById("chart-champion-title").textContent = "Lo que el modelo veía antes del primer partido";
+  document.getElementById("chart-champion-desc").textContent =
+    "Probabilidad de campeón de los favoritos al arrancar el torneo; en amarillo, el campeón real";
+  renderChampionChart(prePlayers, meta, closed.championId);
+
+  document.getElementById("fluctuation-desc").textContent =
+    "Cómo cambió la probabilidad de campeón de los principales candidatos ronda a ronda, hasta el resultado final. Cada punto es la predicción entrando a esa ronda, con los resultados reales ya aplicados.";
+  renderFluctuationChart(roundSnapshots, playersById, closed);
+
+  renderAccuracyTable(roundAccuracy, true);
+
+  document.getElementById("bracket-title").textContent = "Cuadro final";
+  document.getElementById("bracket-desc").textContent =
+    "El camino de favoritos del modelo, ya con todos los resultados reales: cada cruce marca si el modelo acertó al ganador. Pasá el mouse sobre cualquiera para ver el detalle.";
+  document.getElementById("legend-pending").style.display = "none";
+  renderBracket(bracket, playersById);
+
+  document.getElementById("table-title").textContent = "Los 128 jugadores: predicción vs. realidad";
+  document.getElementById("table-desc").textContent =
+    "Probabilidades del modelo antes del torneo, junto a hasta dónde llegó realmente cada jugador. Ordenado por probabilidad de campeón pre-torneo.";
+  renderTable(prePlayers, meta, new Set(), closed);
+
+  const pct = closed.total ? closed.correct / closed.total : 0;
+  document.getElementById("project-result-text").textContent =
+    `el modelo acertó al ganador en ${closed.correct} de ${closed.total} partidos (${fmtPct(pct)}) y tuvo como favorito al campeón, ${name(closed.championId)}, en semifinal y final.`;
+}
+
+function kpi(label, value, sub, accent) {
+  const el = document.createElement("div");
+  el.className = "kpi";
+  const l = document.createElement("div");
+  l.className = "kpi-label";
+  l.textContent = label;
+  const v = document.createElement("div");
+  v.className = "kpi-value";
+  if (accent) v.style.color = accent;
+  v.textContent = value;
+  el.append(l, v);
+  if (sub) {
+    const s = document.createElement("div");
+    s.className = "kpi-sub";
+    s.textContent = sub;
+    el.appendChild(s);
+  }
+  return el;
+}
+
+function renderRecap(closed, roundAccuracy, name) {
+  const section = document.getElementById("recap-section");
+  const root = document.getElementById("recap-kpis");
+  root.textContent = "";
+  const pct = closed.total ? closed.correct / closed.total : 0;
+  root.appendChild(kpi("Partidos acertados", fmtPct(pct), `${closed.correct} de ${closed.total} partidos del cuadro`, cssVar("--series-1")));
+
+  const byRound = Object.fromEntries((roundAccuracy || []).map((r) => [r.round_name, r]));
+  const late = ["SF", "F"].map((r) => byRound[r]).filter(Boolean);
+  if (late.length) {
+    const c = late.reduce((a, r) => a + r.correct, 0);
+    const t = late.reduce((a, r) => a + r.total, 0);
+    root.appendChild(kpi("Semis y final", `${c}/${t}`, "Partidos decisivos acertados", cssVar("--hit")));
+  }
+  if (closed.finalProb != null) {
+    root.appendChild(kpi("Campeón en la final", fmtPct(closed.finalProb), `Confianza en ${name(closed.championId)} antes de la final — acertado`, cssVar("--ball-yellow")));
+  }
+  if (closed.pre && closed.championPreRank) {
+    root.appendChild(kpi("Campeón, pre-torneo", `${closed.championPreRank}.º`, `de 128 en probabilidad de título (${fmtPct(closed.pre[closed.championId].CAMPEON)})`));
+  }
+  if (closed.brier != null) {
+    root.appendChild(kpi("Brier score", closed.brier.toFixed(3), `${closed.brierN} partidos desde 2.ª ronda (0 = perfecto, 0.25 = moneda al aire)`));
+  }
+  section.classList.remove("hidden");
+}
+
+function renderUpsets(closed, name) {
+  const section = document.getElementById("upsets-section");
+  const list = document.getElementById("upsets-list");
+  list.textContent = "";
+  const top = closed.upsets.slice(0, 6);
+  if (!top.length) return;
+  for (const u of top) {
+    const row = document.createElement("div");
+    row.className = "upset-row";
+    const text = document.createElement("div");
+    const strong = document.createElement("b");
+    strong.textContent = name(u.winnerId);
+    const round = document.createElement("span");
+    round.className = "muted";
+    round.textContent = ` · ${ROUND_RESULT_LABELS[u.round]}`;
+    text.append(strong, ` venció a ${name(u.loserId)}`, round);
+    const prob = document.createElement("div");
+    prob.className = "upset-prob";
+    prob.textContent = `${fmtPct(u.loserProb)} para el perdedor`;
+    row.append(text, prob);
+    list.appendChild(row);
+  }
+  section.classList.remove("hidden");
 }
 
 function computeEliminatedIds(bracket) {
@@ -196,7 +434,7 @@ const barValueLabels = {
   },
 };
 
-function renderChampionChart(players, meta) {
+function renderChampionChart(players, meta, highlightId) {
   document.getElementById("chart-sims-label").textContent = meta.n_simulations.toLocaleString("es-AR");
   const top = players.slice(0, TOP_N_BAR_CHART);
   const labels = top.map((p) => p.full_name);
@@ -216,7 +454,9 @@ function renderChampionChart(players, meta) {
         {
           label: "Probabilidad de campeón",
           data,
-          backgroundColor: seriesColor,
+          backgroundColor: highlightId
+            ? top.map((p) => (p.player_id === highlightId ? cssVar("--ball-yellow") : seriesColor))
+            : seriesColor,
           borderRadius: 4,
           borderSkipped: false,
           barThickness: 18,
@@ -252,7 +492,7 @@ function renderChampionChart(players, meta) {
   });
 }
 
-function renderFluctuationChart(roundSnapshots, playersById) {
+function renderFluctuationChart(roundSnapshots, playersById, closed) {
   const section = document.getElementById("fluctuation-section");
   const empty = document.getElementById("fluctuation-empty");
 
@@ -265,13 +505,33 @@ function renderFluctuationChart(roundSnapshots, playersById) {
   empty.classList.add("hidden");
 
   const labels = roundSnapshots.map((s) => ROUND_LABELS[s.round_name] || s.round_name);
-  // Top-N por probabilidad de campeón en el snapshot MÁS RECIENTE -- son los
-  // jugadores que le importan a quien mira el gráfico hoy.
-  const lastSnapshot = roundSnapshots[roundSnapshots.length - 1];
-  const topIds = Object.entries(lastSnapshot.players)
-    .sort((a, b) => b[1].CAMPEON - a[1].CAMPEON)
-    .slice(0, TOP_N_FLUCTUATION)
-    .map(([id]) => id);
+  let topIds;
+  if (closed) {
+    // Torneo cerrado: el último snapshot ya es casi 100/0 entre los dos
+    // finalistas, así que se eligen los jugadores que en ALGÚN momento
+    // fueron candidatos fuertes (pico de probabilidad), y se agrega un punto
+    // final con el resultado real (100% campeón, 0% el resto).
+    const peak = {};
+    for (const s of roundSnapshots) {
+      for (const [id, probs] of Object.entries(s.players)) {
+        peak[id] = Math.max(peak[id] || 0, probs.CAMPEON);
+      }
+    }
+    topIds = Object.entries(peak)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, TOP_N_FLUCTUATION)
+      .map(([id]) => id);
+    if (!topIds.includes(closed.championId)) topIds[topIds.length - 1] = closed.championId;
+    labels.push("Resultado");
+  } else {
+    // Top-N por probabilidad de campeón en el snapshot MÁS RECIENTE -- son los
+    // jugadores que le importan a quien mira el gráfico hoy.
+    const lastSnapshot = roundSnapshots[roundSnapshots.length - 1];
+    topIds = Object.entries(lastSnapshot.players)
+      .sort((a, b) => b[1].CAMPEON - a[1].CAMPEON)
+      .slice(0, TOP_N_FLUCTUATION)
+      .map(([id]) => id);
+  }
 
   const seriesColors = [1, 2, 3, 4, 5, 6, 7, 8].map((i) => cssVar(`--series-${i}`));
   const grid = cssVar("--grid");
@@ -280,7 +540,10 @@ function renderFluctuationChart(roundSnapshots, playersById) {
 
   const datasets = topIds.map((id, i) => ({
     label: playersById[id] ? playersById[id].full_name : id,
-    data: roundSnapshots.map((s) => (s.players[id] ? s.players[id].CAMPEON * 100 : null)),
+    data: [
+      ...roundSnapshots.map((s) => (s.players[id] ? s.players[id].CAMPEON * 100 : null)),
+      ...(closed ? [id === closed.championId ? 100 : 0] : []),
+    ],
     borderColor: seriesColors[i % seriesColors.length],
     backgroundColor: seriesColors[i % seriesColors.length],
     borderWidth: 2,
@@ -319,7 +582,7 @@ function renderFluctuationChart(roundSnapshots, playersById) {
   });
 }
 
-function renderAccuracyTable(roundAccuracy) {
+function renderAccuracyTable(roundAccuracy, showTotal) {
   const section = document.getElementById("accuracy-section");
   const empty = document.getElementById("accuracy-empty");
   // `round_accuracy` puede faltar en un JSON viejo cacheado (schema previo a
@@ -384,6 +647,21 @@ function renderAccuracyTable(roundAccuracy) {
     tr.appendChild(pctTd);
 
     body.appendChild(tr);
+  }
+
+  const foot = document.getElementById("accuracy-table-foot");
+  foot.textContent = "";
+  if (showTotal) {
+    const played = roundAccuracy.filter((r) => r.total > 0);
+    const c = played.reduce((a, r) => a + r.correct, 0);
+    const t = played.reduce((a, r) => a + r.total, 0);
+    const tr = document.createElement("tr");
+    for (const text of ["Torneo completo", String(c), String(t - c), fmtPct(t ? c / t : 0)]) {
+      const td = document.createElement("td");
+      td.textContent = text;
+      tr.appendChild(td);
+    }
+    foot.appendChild(tr);
   }
 }
 
@@ -478,11 +756,15 @@ function renderBracket(bracket, playersById) {
   root.appendChild(champCol);
 }
 
-function renderTable(players, meta, eliminatedIds) {
+function renderTable(players, meta, eliminatedIds, closed) {
   const eliminated = eliminatedIds || new Set();
   const head = document.getElementById("players-table-head");
   head.textContent = "";
-  const headCells = ["#", "Jugador", "Seed", ...DISPLAY_ROUNDS.map((r) => (r === "CAMPEON" ? "Campeón (±IC95%)" : ROUND_LABELS[r]))];
+  const headCells = [
+    "#", "Jugador", "Seed",
+    ...(closed ? ["Resultado real"] : []),
+    ...DISPLAY_ROUNDS.map((r) => (r === "CAMPEON" ? "Campeón (±IC95%)" : ROUND_LABELS[r])),
+  ];
   for (const text of headCells) {
     const th = document.createElement("th");
     th.textContent = text;
@@ -503,6 +785,7 @@ function renderTable(players, meta, eliminatedIds) {
     const isEliminated = eliminated.has(p.player_id);
     const tr = document.createElement("tr");
     if (isEliminated) tr.className = "eliminated-row";
+    if (closed && p.player_id === closed.championId) tr.className = "champion-row";
 
     const rankTd = document.createElement("td");
     rankTd.className = "rank";
@@ -524,6 +807,18 @@ function renderTable(players, meta, eliminatedIds) {
     seedTd.className = "secondary";
     seedTd.textContent = p.seed ? String(p.seed) : "-";
     tr.appendChild(seedTd);
+
+    if (closed) {
+      const resTd = document.createElement("td");
+      resTd.style.textAlign = "left";
+      const reachedRound = closed.reached[p.player_id];
+      const tag = document.createElement("span");
+      tag.className = `result-tag${reachedRound === "CAMPEON" ? " champ" : reachedRound === "F" ? " final" : ""}`;
+      tag.textContent = reachedRound ? ROUND_RESULT_LABELS[reachedRound] : "--";
+      if (reachedRound && reachedRound !== "CAMPEON" && reachedRound !== "F") tag.textContent = `Cayó en ${tag.textContent}`;
+      resTd.appendChild(tag);
+      tr.appendChild(resTd);
+    }
 
     for (const r of DISPLAY_ROUNDS) {
       const td = document.createElement("td");

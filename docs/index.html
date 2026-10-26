@@ -153,6 +153,47 @@
 
   #error-banner, #empty-banner { display: none; }
 
+  /* ---- Modo post-evento (torneo cerrado) ---- */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .kpi {
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .kpi-value { font-size: 1.7rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .kpi-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; }
+  .kpi-sub { font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px; }
+  .champion-hero {
+    background: linear-gradient(120deg, #10254a 0%, var(--surface-1) 65%);
+    border-color: rgba(204,255,0,0.45);
+  }
+  .accent { color: var(--ball-yellow); }
+  .upset-list { display: flex; flex-direction: column; gap: 8px; }
+  .upset-row {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 12px;
+    padding: 9px 12px; border-radius: 6px; background: var(--surface-2);
+    border-left: 3px solid var(--miss); font-size: 0.85rem;
+  }
+  .upset-row .upset-prob { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--miss); white-space: nowrap; }
+  .result-tag {
+    display: inline-block; padding: 1px 8px; border-radius: 999px;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text-secondary);
+  }
+  .result-tag.champ { color: #1a2200; background: var(--ball-yellow); border-color: var(--ball-yellow); }
+  .result-tag.final { color: var(--series-1); border-color: rgba(57,135,229,0.5); }
+  tr.champion-row td { background: rgba(204,255,0,0.06); }
+  #accuracy-table tfoot td {
+    padding: 10px 12px; text-align: right; font-weight: 700;
+    border-top: 1px solid var(--baseline); font-variant-numeric: tabular-nums;
+  }
+  #accuracy-table tfoot td:first-child { text-align: left; }
+  .stack-chip {
+    display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.74rem;
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text-secondary);
+  }
+  .project-list li { margin-bottom: 8px; padding-left: 16px; position: relative; }
+  .project-list li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--series-1); }
+
   /* Logo del header -- al lado del título, altura fija para no romper el
      ritmo vertical del masthead sea cual sea el aspect ratio del PNG. */
   .header-logo { height: 46px; width: auto; flex: none; object-fit: contain; vertical-align: middle; }
@@ -199,6 +240,7 @@
       </div>
       <div class="flex items-center gap-2">
         <span id="live-badge" class="hidden text-xs font-semibold px-2 py-1 rounded-full" style="background: rgba(12,163,12,0.15); color: var(--good); border: 1px solid rgba(12,163,12,0.4);">● EN VIVO</span>
+        <span id="closed-badge" class="hidden text-xs font-semibold px-2 py-1 rounded-full" style="background: rgba(204,255,0,0.12); color: var(--ball-yellow); border: 1px solid rgba(204,255,0,0.4);">TORNEO FINALIZADO</span>
         <span id="updated-badge" class="text-xs font-medium px-2 py-1 rounded-full secondary" style="background: var(--surface-1); border: 1px solid var(--border);"></span>
       </div>
     </div>
@@ -227,16 +269,31 @@
     <section class="card px-6 py-5 flex items-center gap-5" id="hero-card">
       <img src="img/logo-trofeo.png" alt="Trofeo" class="hero-trophy">
       <div>
-        <div class="muted text-xs uppercase tracking-wide">Favorito del modelo</div>
+        <div class="muted text-xs uppercase tracking-wide" id="hero-label">Favorito del modelo</div>
         <div class="text-2xl font-bold" id="hero-name">--</div>
-        <div class="secondary text-sm">Probabilidad de campeón: <span class="champ-pct" id="hero-pct">--</span></div>
+        <div class="secondary text-sm" id="hero-sub">Probabilidad de campeón: <span class="champ-pct" id="hero-pct">--</span></div>
+        <div class="muted text-xs mt-2 hidden" id="hero-detail"></div>
       </div>
+    </section>
+
+    <!-- Balance final (solo con el torneo cerrado) -->
+    <section class="card px-6 py-5 hidden" id="recap-section">
+      <h2 class="text-base font-semibold mb-1">Balance final del modelo</h2>
+      <p class="muted text-xs mb-4">Todo lo que predijo el modelo durante el torneo, medido contra lo que pasó en la cancha. Cada partido se evalúa con la predicción hecha justo antes de esa ronda.</p>
+      <div class="kpi-grid" id="recap-kpis"></div>
+    </section>
+
+    <!-- Sorpresas (solo con el torneo cerrado) -->
+    <section class="card px-6 py-5 hidden" id="upsets-section">
+      <h2 class="text-base font-semibold mb-1">Las sorpresas que el modelo no vio venir</h2>
+      <p class="muted text-xs mb-4">Partidos en los que el modelo tenía más confianza en el jugador que terminó perdiendo (probabilidad asignada al perdedor entrando a esa ronda).</p>
+      <div class="upset-list" id="upsets-list"></div>
     </section>
 
     <!-- Barras horizontales: probabilidad de campeón -->
     <section class="card px-6 py-5">
-      <h2 class="text-base font-semibold mb-1">Probabilidad de campeón</h2>
-      <p class="muted text-xs mb-4">Top jugadores del cuadro, según <span id="chart-sims-label">--</span> simulaciones Monte Carlo.</p>
+      <h2 class="text-base font-semibold mb-1" id="chart-champion-title">Probabilidad de campeón</h2>
+      <p class="muted text-xs mb-4"><span id="chart-champion-desc">Top jugadores del cuadro</span>, según <span id="chart-sims-label">--</span> simulaciones Monte Carlo.</p>
       <div style="height: 420px;">
         <canvas id="chart-champion"></canvas>
       </div>
@@ -245,7 +302,7 @@
     <!-- Línea: fluctuación por ronda -->
     <section class="card px-6 py-5" id="fluctuation-section">
       <h2 class="text-base font-semibold mb-1">Cómo fluctuó la probabilidad de campeón</h2>
-      <p class="muted text-xs mb-4">Una línea por jugador -- cada punto es la predicción "entrando a esa ronda", recalculada con los resultados reales ya jugados.</p>
+      <p class="muted text-xs mb-4" id="fluctuation-desc">Una línea por jugador -- cada punto es la predicción "entrando a esa ronda", recalculada con los resultados reales ya jugados.</p>
       <div style="height: 360px;">
         <canvas id="chart-fluctuation"></canvas>
       </div>
@@ -262,6 +319,7 @@
         <table id="accuracy-table">
           <thead><tr><th>Ronda</th><th>Aciertos</th><th>Fallos</th><th>% acierto</th></tr></thead>
           <tbody id="accuracy-table-body"></tbody>
+          <tfoot id="accuracy-table-foot"></tfoot>
         </table>
       </div>
     </section>
@@ -271,12 +329,12 @@
 
     <!-- Bracket -->
     <section class="card px-6 py-5">
-      <h2 class="text-base font-semibold mb-1">Cuadro proyectado</h2>
-      <p class="muted text-xs mb-3">Un solo camino de favoritos (probabilidad exacta del modelo, sin Monte Carlo). Los cruces ya jugados quedan marcados según le haya ido al modelo; pasá el mouse sobre cualquiera para ver el detalle.</p>
+      <h2 class="text-base font-semibold mb-1" id="bracket-title">Cuadro proyectado</h2>
+      <p class="muted text-xs mb-3" id="bracket-desc">Un solo camino de favoritos (probabilidad exacta del modelo, sin Monte Carlo). Los cruces ya jugados quedan marcados según le haya ido al modelo; pasá el mouse sobre cualquiera para ver el detalle.</p>
       <div class="bracket-legend">
         <span class="legend-item"><span class="legend-chip hit">✓</span>Acertado — el modelo tenía a este ganador</span>
         <span class="legend-item"><span class="legend-chip miss">✗</span>Fallado — ganó el otro jugador</span>
-        <span class="legend-item"><span class="legend-chip"></span>Sin jugar — proyección del modelo, con su %</span>
+        <span class="legend-item" id="legend-pending"><span class="legend-chip"></span>Sin jugar — proyección del modelo, con su %</span>
       </div>
       <div class="overflow-x-auto pb-2">
         <div class="bracket" id="bracket-root"></div>
@@ -285,8 +343,8 @@
 
     <!-- Tabla completa -->
     <section class="card px-6 py-5">
-      <h2 class="text-base font-semibold mb-1">Cuadro completo</h2>
-      <p class="muted text-xs mb-4">Los jugadores eliminados bajan al fondo de la tabla y quedan marcados en gris.</p>
+      <h2 class="text-base font-semibold mb-1" id="table-title">Cuadro completo</h2>
+      <p class="muted text-xs mb-4" id="table-desc">Los jugadores eliminados bajan al fondo de la tabla y quedan marcados en gris.</p>
       <div class="overflow-x-auto">
         <table id="players-table">
           <thead><tr id="players-table-head"></tr></thead>
@@ -296,10 +354,45 @@
     </section>
 
   </div>
+
+  <!-- Sobre el proyecto (portafolio) -->
+  <section class="card px-6 py-6" id="project-section">
+    <div class="muted text-xs uppercase tracking-wide mb-1">Sobre el proyecto</div>
+    <h2 class="text-xl font-bold mb-2">Qué construí y qué logré</h2>
+    <p class="secondary text-sm mb-5 max-w-3xl">Un sistema de punta a punta que predijo el US Open 2026 en vivo: desde la descarga de datos y el modelo estadístico hasta un dashboard público que se actualizó solo durante todo el torneo, sin servidor y sin intervención manual.</p>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div>
+        <h3 class="text-sm font-semibold mb-3">Lo construido</h3>
+        <ul class="project-list secondary text-sm">
+          <li><b class="text-white">Modelo de saque/resto:</b> probabilidad punto a punto (Barnett-Clarke) con métricas de pista dura ajustadas por la fuerza de los rivales y decaimiento temporal.</li>
+          <li><b class="text-white">Simulación Monte Carlo:</b> juego → set → partido → cuadro de 128, con las reglas reales del US Open, 10.000 veces por actualización.</li>
+          <li><b class="text-white">Datos en vivo:</b> el sorteo oficial y los resultados reales se ingieren automáticamente; cada partido jugado se fija como hecho y solo se simula lo que falta.</li>
+          <li><b class="text-white">Automatización:</b> GitHub Actions regeneró la predicción durante el torneo y la publicó en GitHub Pages como JSON estático.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold mb-3">Rigor y resultados</h3>
+        <ul class="project-list secondary text-sm">
+          <li><b class="text-white">Validado antes de usarlo:</b> backtest con 2.032 partidos reales del US Open 2010-2025, con corte temporal estricto (sin data leakage), contra ranking ATP, Elo de superficie y moneda al aire.</li>
+          <li><b class="text-white">Brier 0.193 en el backtest</b>, a la par de un Elo de superficie puro pero conservando la estructura de juegos y sets.</li>
+          <li><b class="text-white">139+ tests automatizados</b> (pytest): reconstrucción del cuadro, no-leakage, motor de simulación, ingesta en vivo y exportadores.</li>
+          <li><b class="text-white" id="project-result-strong">Resultado 2026:</b> <span id="project-result-text">ver el balance final más arriba.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2 mt-5">
+      <span class="stack-chip">Python</span><span class="stack-chip">pandas</span><span class="stack-chip">SQLite</span><span class="stack-chip">Monte Carlo</span><span class="stack-chip">pytest</span><span class="stack-chip">GitHub Actions</span><span class="stack-chip">GitHub Pages</span><span class="stack-chip">JavaScript</span><span class="stack-chip">Chart.js</span><span class="stack-chip">Tailwind</span>
+    </div>
+    <div class="mt-5">
+      <a href="https://github.com/Gab9Cruzz/UsOpen_Prediction" class="text-sm font-semibold underline" style="color: var(--series-1);">Ver el código en GitHub →</a>
+    </div>
+  </section>
 </main>
 
 <footer class="max-w-6xl mx-auto px-5 py-8 muted text-xs">
-  <p>Generado automáticamente por <a class="underline" href="https://github.com/Gab9Cruzz/UsOpen_Prediction" style="color: var(--series-1);">UsOpen_Prediction</a> -- simulación Monte Carlo sobre datos reales de saque/resto (ver el repo para el modelo y el backtest de precisión). Este sitio no tiene backend: es un JSON estático regenerado por GitHub Actions durante el torneo.</p>
+  <p>Generado automáticamente por <a class="underline" href="https://github.com/Gab9Cruzz/UsOpen_Prediction" style="color: var(--series-1);">UsOpen_Prediction</a> -- simulación Monte Carlo sobre datos reales de saque/resto (ver el repo para el modelo y el backtest de precisión). Este sitio no tiene backend: es un JSON estático regenerado por GitHub Actions durante el torneo. Edición 2026 cerrada; los datos finales quedan archivados en <a class="underline" href="data/archivo/us_open_2026.json" style="color: var(--series-1);">data/archivo/us_open_2026.json</a>.</p>
 </footer>
 
 <script src="app.js"></script>
